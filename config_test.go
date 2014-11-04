@@ -6,15 +6,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var sampleConfig = Config{
-	Caches: []CacheConfig{
+var sampleConfig = config{
+	Caches: []cacheConfig{
 		{
 			Name:        "cache1",
-			Collections: []CollectionConfig{},
+			Collections: []collectionConfig{},
 		},
 		{
 			Name:        "cache2",
-			Collections: []CollectionConfig{},
+			Collections: []collectionConfig{},
 		},
 	},
 }

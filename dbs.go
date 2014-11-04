@@ -7,28 +7,29 @@ import (
 	"github.com/Clever/moredis/logger"
 )
 
+// Default database connection parameters
 const (
-	DEFAULT_MONGO_URL = "localhost:27017"
-	DEFAULT_MONGO_DB  = ""
-	DEFAULT_REDIS_URL = "localhost:6379"
+	DefaultMongoURL = "localhost:27017"
+	DefaultMongoDB  = ""
+	DefaultRedisURL = "localhost:6379"
 )
 
 // SetupDbs takes connection parameters for redis and mongo and returns active sessions.
 // The caller is responsible for closing the returned connections.
-func SetupDbs(mongoUrl, mongoDbName, redisUrl string) (*mgo.Database, redis.Conn, error) {
-	mongoSession, err := mgo.Dial(mongoUrl)
+func SetupDbs(mongoURL, mongoDBName, redisURL string) (*mgo.Database, redis.Conn, error) {
+	mongoSession, err := mgo.Dial(mongoURL)
 	if err != nil {
 		return nil, nil, err
 	}
-	mongoDb := mongoSession.DB(mongoDbName)
-	logger.Info("Connected to mongo", logger.M{"mongo_url": mongoUrl, "mongo_db": mongoDbName})
+	mongoDB := mongoSession.DB(mongoDBName)
+	logger.Info("Connected to mongo", logger.M{"mongo_url": mongoURL, "mongo_db": mongoDBName})
 
-	redisConn, err := redis.Dial("tcp", redisUrl)
+	redisConn, err := redis.Dial("tcp", redisURL)
 	if err != nil {
 		return nil, nil, err
 	}
-	logger.Info("Connected to redis", logger.M{"redis_url": redisUrl})
-	return mongoDb, redisConn, nil
+	logger.Info("Connected to redis", logger.M{"redis_url": redisURL})
+	return mongoDB, redisConn, nil
 }
 
 // MongoIter defines an interface that must be met by types we use as mongo iterators.
@@ -50,7 +51,7 @@ type redisWriter struct {
 	currentCount  int
 }
 
-// Creates a new RedisWriter.  We wrap redis.Conn here so that we can specify how many
+// NewRedisWriter creates a new RedisWriter.  We wrap redis.Conn here so that we can specify how many
 // documents we want to allow buffered before flushing automatically.
 func NewRedisWriter(conn redis.Conn) RedisWriter {
 	writer := &redisWriter{

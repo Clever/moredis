@@ -33,11 +33,11 @@ func benchmarkRedisWriter(b *testing.B, flushInterval int) {
 	defer redisConn.Close()
 	writer := &redisWriter{conn: redisConn, flushInterval: flushInterval}
 	rmap := "moredis:map:1"
-	fake_data := makeFakeData(100000)
+	fakeData := makeFakeData(100000)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		b.StartTimer()
-		doWrites(b, writer, rmap, fake_data)
+		doWrites(b, writer, rmap, fakeData)
 		b.StopTimer()
 		redisConn.Do("FLUSHDB")
 	}

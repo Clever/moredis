@@ -59,7 +59,7 @@ func (m *MockIter) Next(result interface{}) bool {
 
 func TestProcessQuery(t *testing.T) {
 	iter := NewMockIter([]bson.M{{"test": "1", "val": "expected"}, {"test": "2", "val": "expected"}})
-	maps := []MapConfig{
+	maps := []mapConfig{
 		{
 			Key:     "{{.test}}",
 			Value:   "{{.val}}",
