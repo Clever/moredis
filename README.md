@@ -16,13 +16,38 @@ See this talk by foursquare for more detailed motivation behind breaking up mong
 
 In a nutshell, moredis works by taking a user specified MongoDB query, then for each returned document, mapping some some value in the document to another value in that document using a redis hash.  moredis also allows you to paramaterize your query with values passed in at runtime.
 
-I think this can best be explained with examples:
+For more specific examples, see [Examples](#examples)
+
+## Configuration
+
+moredis caches are configured using a file named config.yml which must be present in the same folder as the moredis executable.  This repo contains a sample config.yml which you will need to modify to suit your needs.  The [sample](./config.yml) has comments to describe the various fields and their purposes.
+
+You also need to provide moredis with connection parameters for both your MongoDB instance and Redis instance.  These settings can be set with either command line flags or environment variables (with the command line flags taking precedence).  URL settings can contain the port, if omitted the default MongoDB and Redis ports will be used (27017 and 6379 respectively).
+
+For each, the settings locations are:
+
+* Mongo URL: CLI: -m, Env: MONGO_URL, defaults to localhost
+* Mongo DB: CLI: -d, Env: MONGO_DB, defaults to ""
+* Redis URL: CLI: -r, Env: REDIS_URL, defaults to localhost
+
+## Usage
+```bash
+Usage of ./moredis:
+  -c, -cache        Which cache to populate (REQUIRED)
+  -d, -mongo_db     MongoDB Database, can also be set via the MONGO_DB environment variable
+  -m, -mongo_url    MongoDB URL, can also be set via the MONGO_URL environment variable
+  -p, -params       JSON object with params used for substitution into queries and collection names in config.yml
+  -r, -redis_url    Redis URL, can also be set via the REDIS_URL environment variable
+  -h, -help         Print this usage message.
+```
+
+## Example usage <a id="examples"></a>
 
 ### Simple case insensitive map
 
 Lets say you have a MongoDB collection called 'users', and in this collection you have documents that look like:
 
-```json
+```javascript
 {
   _id: ObjectId("507f1f77bcf86cd799431111"),
   username: "CoolDude",
@@ -49,7 +74,7 @@ caches:
 Then run moredis with:
 
 ```bash
-$ ./moredis '{"cache": "demo-cache", "mongo_url": <mongo url>, "mongo_db": <mongo db>, "redis_url": <redis url>}'
+$ ./moredis -c demo-cache
 ```
 
 After this runs, you will have a key in redis called 'users:email'.  This value for this key will be the key for a hash that has all of your email-to-id mappings.  Doing a lookup of the user id for email 'cooldude25@hotmail.com' in redis would look like the following in redis-cli:
@@ -105,21 +130,19 @@ caches:
 Now you can see that both our query and our map name are paramaterized by this "group" parameter.  You can pass that parameter in on the commandline like so:
 
 ```bash
-$ ./moredis '{"cache": "demo-cache", "group": "507f1f77bcf86cd799432222", "mongo_url": <mongo url>, "mongo_db": <mongo db>, "redis_url": <redis url>}'
+$ ./moredis -c demo-cache -p '{"group": "507f1f77bcf86cd799432222"}'
 ```
 
 The result of this run will be the same as from the previous example, except the map will now contain the group id in the key name (so that caches for different groups don't overwrite each other).
 
-## Configuration
-
-## Example usage
-
-TODO
-
 ## Installation
 
-TODO
+You can grab the latest moredis release for your platform from the [Releases](https://github.com/Clever/moredis/releases) page.  Then, just extract, configure, and run.
 
 ## Local development
 
-TODO
+You can grab moredis for local development in the usual golang way with:
+
+```bash
+$ go get github.com/Clever/moredis
+```
