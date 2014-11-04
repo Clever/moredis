@@ -140,8 +140,8 @@ func ProcessQuery(writer RedisWriter, iter MongoIter, maps []mapConfig) error {
 				return err
 			}
 			writer.Send("HSET", rmap.HashKey, key, val)
-			processed++
 		}
+		processed++
 	}
 	logger.Info("Processed all documents for query", logger.M{"processed": processed})
 	return nil
