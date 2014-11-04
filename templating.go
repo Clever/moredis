@@ -47,13 +47,13 @@ func safeToLower(toConvert interface{}) string {
 // ApplyTemplate takes a template string and a map of values to use
 // for evaluating the template.  Returns the evaluated template as
 // a string or an error.
-func ApplyTemplate(templateString string, params bson.M) (string, error) {
+func ApplyTemplate(templateString string, payload bson.M) (string, error) {
 	tmpl, err := template.New("").Funcs(funcMap).Parse(templateString)
 	if err != nil {
 		return "", err
 	}
 	var b bytes.Buffer
-	if err = tmpl.Execute(&b, params); err != nil {
+	if err = tmpl.Execute(&b, payload); err != nil {
 		return "", err
 	}
 	return b.String(), nil

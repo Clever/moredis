@@ -47,7 +47,7 @@ func TestSafeToLower(t *testing.T) {
 type applyTemplateTestSpec struct {
 	name           string
 	templateString string
-	payload        map[string]interface{}
+	payload        bson.M
 	expected       string
 	expectedError  bool
 }
@@ -56,37 +56,37 @@ var applyTemplateTests = []applyTemplateTestSpec{
 	{
 		name:           "empty input",
 		templateString: "",
-		payload:        map[string]interface{}{},
+		payload:        bson.M{},
 		expected:       "",
 	},
 	{
 		name:           "simple field sub",
 		templateString: "{{.field}}",
-		payload:        map[string]interface{}{"field": "value"},
+		payload:        bson.M{"field": "value"},
 		expected:       "value",
 	},
 	{
 		name:           "field sub and text",
 		templateString: "text:{{.field}}",
-		payload:        map[string]interface{}{"field": "value"},
+		payload:        bson.M{"field": "value"},
 		expected:       "text:value",
 	},
 	{
 		name:           "function calling",
 		templateString: "{{toLower .field}}",
-		payload:        map[string]interface{}{"field": "VALUE"},
+		payload:        bson.M{"field": "VALUE"},
 		expected:       "value",
 	},
 	{
 		name:           "invalid template string",
 		templateString: "{{()}}",
-		payload:        map[string]interface{}{},
+		payload:        bson.M{},
 		expectedError:  true,
 	},
 	{
 		name:           "invalid function in template",
 		templateString: "{{nonExistentFunc}}",
-		payload:        map[string]interface{}{},
+		payload:        bson.M{},
 		expectedError:  true,
 	},
 }
