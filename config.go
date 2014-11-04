@@ -30,7 +30,7 @@ type mapConfig struct {
 }
 
 // LoadConfig takes a path to a config yaml file and loads it into the appropriate structs.
-func LoadConfig(path string) (config, error) {
+func loadConfig(path string) (config, error) {
 	raw, err := ioutil.ReadFile(path)
 	if err != nil {
 		return config{}, err

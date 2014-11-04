@@ -69,7 +69,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	conf, err := LoadConfig("./config.yml")
+	conf, err := loadConfig("./config.yml")
 	if err != nil {
 		logger.Error("Error loading config.", err)
 	}

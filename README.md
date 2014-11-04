@@ -26,9 +26,18 @@ You also need to provide moredis with connection parameters for both your MongoD
 
 For each, the settings locations are:
 
-* Mongo URL: CLI: -m, Env: MONGO_URL, defaults to localhost
-* Mongo DB: CLI: -d, Env: MONGO_DB, defaults to ""
-* Redis URL: CLI: -r, Env: REDIS_URL, defaults to localhost
+* Mongo URL
+    * flag: -m
+    * env: MONGO_URL
+    * default: localhost
+* Mongo DB
+    * flag: -d
+    * env: MONGO_DB
+    * default: ""
+* Redis URL
+    * flag: -r
+    * env: REDIS_URL
+    * default: localhost
 
 ## Usage
 ```bash
@@ -41,7 +50,7 @@ Usage of ./moredis:
   -h, -help         Print this usage message.
 ```
 
-## Example usage <a id="examples"></a>
+## Examples <a id="examples"></a>
 
 ### Simple case insensitive map
 
