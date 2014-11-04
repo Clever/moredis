@@ -13,7 +13,7 @@ caches:
         collection: "example-collection"
 
         # query is the query we will execute on the collection, represented as a JSON object.
-        # Queries can be paramaterized, with paramaters passed in on the command line.
+        # Queries can be parameterized, with parameters passed in on the command line.
         # Substitution of params is done using go's text/template package.  Additionally,
         # any string which can be identified as a MongoDB ObjectId hex identifier will be
         # treated like an ObjectId.
@@ -25,15 +25,15 @@ caches:
         maps:
           -
             # name is the name to store the mapping as in redis.
-            # Name can be paramaterized the same as query, using parameters passed in on the command line.
+            # Name can be parameterized the same as query, using parameters passed in on the command line.
             name: "example:mapping"
 
-            # key is the key to use in your map on redis.  keys can be paramaterized using fields
+            # key is the key to use in your map on redis.  keys can be parameterized using fields
             # from the documents returned by your query.  Note that ObjectIds will need to be converted
             # to strings for storage in redis, you can do this using the toString template function.
             key: "{{.field}}"
 
-            # val is the value to be stored for the key specified above.  Values can be paramaterized
+            # val is the value to be stored for the key specified above.  Values can be parameterized
             # using fields from the documents returned by your query.  Note that ObjectIds will need to be converted
             # to strings for storage in redis, you can do this using the toString template function.
             val: "{{toString ._id}}"

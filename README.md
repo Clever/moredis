@@ -8,13 +8,13 @@ MongoDB (and any database for that matter) becomes unwieldy if you have many app
 Oftentimes building out your infrastructure like this makes sense to start, but as time goes on and the number of applications increases it becomes harder to do things like diagnose database performance problems and make application-specific database optimizations.
 
 moredis is a tool that reduces an application's direct dependency on MongoDB by syncing specific data out of MongoDB and into redis.
-The data is synced in a way that optimizes for the query patterns needed by the application, so that the application no longer requires mongoDB to .
+The data is synced in a way that optimizes for the query patterns needed by the application, so that the application no longer requires MongoDB to .
 
-See this talk by foursquare for more detailed motivation behind breaking up mongodb monoliths into a more service-oriented persistence layer: [Service Oriented Clusters](https://www.mongodb.com/presentations/service-oriented-clusters-foursquare-0).
+See this talk by foursquare for more detailed motivation behind breaking up MongoDB monoliths into a more service-oriented persistence layer: [Service Oriented Clusters](https://www.mongodb.com/presentations/service-oriented-clusters-foursquare-0).
 
 ## How it Works
 
-In a nutshell, moredis works by taking a user specified MongoDB query, then for each returned document, mapping some some value in the document to another value in that document using a redis hash.  moredis also allows you to paramaterize your query with values passed in at runtime.
+In a nutshell, moredis works by taking a user specified MongoDB query, then for each returned document, mapping some some value in the document to another value in that document using a redis hash.  moredis also allows you to parameterize your query with values passed in at runtime.
 
 For more specific examples, see [Examples](#examples)
 
@@ -50,7 +50,7 @@ Usage of ./moredis:
   -h, -help         Print this usage message.
 ```
 
-## Examples <a id="examples"></a>
+## Examples
 
 ### Simple case insensitive map
 
@@ -117,9 +117,9 @@ caches:
 
 With this config, we will now only do the mapping for documents in the user collection with the given group id.
 
-### Paramaterizing your query
+### Parameterizing your query
 
-To take this example one step further, not only do you only want to create the cache for a specific group, you want to be able to specify this group at runtime without modifying your config.yml.  With moredis, you can do this by taking advantage of paramaterization in your config, then you can pass in the parameters you want to use on the command line.
+To take this example one step further, not only do you only want to create the cache for a specific group, you want to be able to specify this group at runtime without modifying your config.yml.  With moredis, you can do this by taking advantage of parameterization in your config, then you can pass in the parameters you want to use on the command line.
 
 To accomplish passing the group id in at runtime, we could modify our config to now look like:
 
@@ -136,7 +136,7 @@ caches:
             val: '{{toString ._id}}'
 ```
 
-Now you can see that both our query and our map name are paramaterized by this "group" parameter.  You can pass that parameter in on the commandline like so:
+Now you can see that both our query and our map name are parameterized by this "group" parameter.  You can pass that parameter in on the commandline like so:
 
 ```bash
 $ ./moredis -c demo-cache -p '{"group": "507f1f77bcf86cd799432222"}'
@@ -154,4 +154,10 @@ You can grab moredis for local development in the usual golang way with:
 
 ```bash
 $ go get github.com/Clever/moredis
+```
+
+You can run tests with:
+
+```bash
+$ make test
 ```
