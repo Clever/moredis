@@ -42,27 +42,21 @@ var (
 )
 
 func init() {
-	const (
-		redisUrlUsage = "Redis URL, can also be set via the REDIS_URL environment variable)"
-		mongoUrlUsage = "MongoDB URL, can also be set via the MONGO_URL environment variable"
-		mongoDbUsage  = "MongoDB Database, can also be set via the MONGO_DB environment variable"
-		cacheUsage    = "Which cache to populate"
-		paramsUsage   = "Params used for substitution into queries and collection names in config.yml"
-	)
-
-	flag.StringVar(&redisUrl, "redis_url", "", redisUrlUsage)
-	flag.StringVar(&redisUrl, "r", "", redisUrlUsage+" (shorthand)")
-	flag.StringVar(&mongoUrl, "mongo_url", "", mongoUrlUsage)
-	flag.StringVar(&mongoUrl, "m", "", mongoUrlUsage+" (shorthand)")
-	flag.StringVar(&mongoDbName, "mongo_db", "", mongoDbUsage)
-	flag.StringVar(&mongoDbName, "d", "", mongoDbUsage+" (shorthand)")
-	flag.StringVar(&cache, "cache", "", cacheUsage)
-	flag.StringVar(&cache, "c", "", cacheUsage+" (shorthand)")
-	flag.Var(&params, "params", paramsUsage)
-	flag.Var(&params, "p", paramsUsage+" (shorthand)")
+	// Usage strings in PrintUsage
+	flag.StringVar(&redisUrl, "redis_url", "", "")
+	flag.StringVar(&redisUrl, "r", "", "")
+	flag.StringVar(&mongoUrl, "mongo_url", "", "")
+	flag.StringVar(&mongoUrl, "m", "", "")
+	flag.StringVar(&mongoDbName, "mongo_db", "", "")
+	flag.StringVar(&mongoDbName, "d", "", "")
+	flag.StringVar(&cache, "cache", "", "")
+	flag.StringVar(&cache, "c", "", "")
+	flag.Var(&params, "params", "")
+	flag.Var(&params, "p", "")
 }
 
 func main() {
+	flag.Usage = PrintUsage
 	flag.Parse()
 
 	// cache is the only required parameter
@@ -183,4 +177,17 @@ func UpdateRedisMapReference(conn redis.Conn, params Params, mapConfig MapConfig
 	logger.Info("Deleting old referenced map", logger.M{"map": oldMap})
 	conn.Do("DEL", oldMap)
 	return nil
+}
+
+// PrintUsage is used to replace flag.Usage, which is pretty terrible.
+func PrintUsage() {
+	var usage = `Usage of ./moredis:
+  -c, -cache        Which cache to populate (REQUIRED)
+  -d, -mongo_db     MongoDB Database, can also be set via the MONGO_DB environment variable
+  -m, -mongo_url    MongoDB URL, can also be set via the MONGO_URL environment variable
+  -p, -params       JSON object with params used for substitution into queries and collection names in config.yml
+  -r, -redis_url    Redis URL, can also be set via the REDIS_URL environment variable
+  -h, -help         Print this usage message.
+`
+	fmt.Fprint(os.Stderr, usage)
 }
