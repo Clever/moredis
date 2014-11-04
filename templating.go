@@ -47,13 +47,13 @@ func safeToLower(toConvert interface{}) string {
 // ApplyTemplate takes a template string and a map of values to use
 // for evaluating the template.  Returns the evaluated template as
 // a string or an error.
-func ApplyTemplate(templateString string, payload map[string]interface{}) (string, error) {
+func ApplyTemplate(templateString string, params bson.M) (string, error) {
 	tmpl, err := template.New("").Funcs(funcMap).Parse(templateString)
 	if err != nil {
 		return "", err
 	}
 	var b bytes.Buffer
-	if err = tmpl.Execute(&b, payload); err != nil {
+	if err = tmpl.Execute(&b, params); err != nil {
 		return "", err
 	}
 	return b.String(), nil
@@ -66,8 +66,8 @@ func ApplyTemplate(templateString string, payload map[string]interface{}) (strin
 // that all keys must be strings.  For mongo operators, you should
 // encase them in quotes, for example "$or".  For ObjectIds, you should
 // use the hex string in place of the ObjectId.
-func ParseQuery(query string, payload map[string]interface{}) (map[string]interface{}, error) {
-	parsed, err := ApplyTemplate(query, payload)
+func ParseQuery(query string, params Params) (map[string]interface{}, error) {
+	parsed, err := ApplyTemplate(query, params.Bson())
 	if err != nil {
 		return map[string]interface{}{}, err
 	}

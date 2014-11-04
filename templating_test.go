@@ -132,7 +132,7 @@ func TestObjectIds(t *testing.T) {
 type parseQueryTestSpec struct {
 	name          string
 	queryString   string
-	payload       map[string]interface{}
+	params        Params
 	expected      map[string]interface{}
 	expectedError bool
 }
@@ -141,25 +141,25 @@ var parseQueryTests = []parseQueryTestSpec{
 	{
 		name:        "simple query with ObjectId substitution",
 		queryString: `{"_id": "{{.id}}"}`,
-		payload:     map[string]interface{}{"id": "111111111111111111111111"},
+		params:      Params{"id": "111111111111111111111111"},
 		expected:    map[string]interface{}{"_id": bson.ObjectIdHex("111111111111111111111111")},
 	},
 	{
 		name:        "simple substitution and mongo operator",
 		queryString: `{"{{.field}}": {"$exists": true}}`,
-		payload:     map[string]interface{}{"field": "somefield"},
+		params:      Params{"field": "somefield"},
 		expected:    map[string]interface{}{"somefield": map[string]interface{}{"$exists": true}},
 	},
 	{
 		name:          "invalid json (missing quotes)",
 		queryString:   `{id: 5}`,
-		payload:       map[string]interface{}{},
+		params:        Params{},
 		expectedError: true,
 	},
 	{
 		name:          "invalid template",
 		queryString:   `{"field": {{()}}}`,
-		payload:       map[string]interface{}{},
+		params:        Params{},
 		expectedError: true,
 	},
 }
@@ -167,7 +167,7 @@ var parseQueryTests = []parseQueryTestSpec{
 func TestParseQuery(t *testing.T) {
 	for _, testCase := range parseQueryTests {
 		actual, err := ParseQuery(testCase.queryString,
-			testCase.payload)
+			testCase.params)
 		if !testCase.expectedError {
 			assert.Nil(t, err)
 			assert.Equal(t, testCase.expected, actual)

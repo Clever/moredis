@@ -1,18 +1,16 @@
 package main
 
-import (
-	"os"
-	"strings"
-)
+import "os"
 
-// PayloadOrEnv looks for a value in the payload.  If it's not there, it will look for the value in
-// the processes environment (with the value uppercased).  If that fails, it will return the fallback value.
-func PayloadOrEnv(payload map[string]interface{}, val string, fallback string) string {
-	if fromPayload, ok := payload[val]; ok {
-		return fromPayload.(string)
+// FlagEnvOrDefault takes in the value returned from flag parsing, and environment variable to check, and a default value.
+// If the flag was not set, it tries to retrieve the value from environment variables.  If it is not found there it returns
+// the default value.
+func FlagEnvOrDefault(flagVal, envVar, defaultValue string) string {
+	if flagVal != "" {
+		return flagVal
 	}
-	if fromEnvUpper := os.Getenv(strings.ToUpper(val)); fromEnvUpper != "" {
-		return fromEnvUpper
+	if fromEnv := os.Getenv(envVar); fromEnv != "" {
+		return fromEnv
 	}
-	return fallback
+	return defaultValue
 }

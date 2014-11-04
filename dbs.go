@@ -9,6 +9,7 @@ import (
 
 const (
 	DEFAULT_MONGO_URL = "localhost:27017"
+	DEFAULT_MONGO_DB  = ""
 	DEFAULT_REDIS_URL = "localhost:6379"
 )
 

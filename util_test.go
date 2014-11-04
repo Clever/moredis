@@ -7,47 +7,47 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type payloadOrEnvTestSpec struct {
-	name     string
-	env      map[string]string
-	payload  map[string]interface{}
-	val      string
-	fallback string
-	expected string
+type flagEnvOrDefaultTestSpec struct {
+	name       string
+	env        map[string]string
+	envVar     string
+	flagVal    string
+	defaultVal string
+	expected   string
 }
 
-var payloadOrEnvTests = []payloadOrEnvTestSpec{
+var payloadOrEnvTests = []flagEnvOrDefaultTestSpec{
 	{
-		name:     "val not in payload or env",
-		env:      map[string]string{},
-		payload:  map[string]interface{}{},
-		val:      "test",
-		fallback: "expected",
-		expected: "expected",
+		name:       "val not in flags or env",
+		env:        map[string]string{},
+		envVar:     "TEST",
+		flagVal:    "",
+		defaultVal: "expected",
+		expected:   "expected",
 	},
 	{
-		name:     "val in env only (uppercase)",
-		env:      map[string]string{"TEST": "expected"},
-		payload:  map[string]interface{}{},
-		val:      "test",
-		fallback: "you dun goofed",
-		expected: "expected",
+		name:       "val in env only",
+		env:        map[string]string{"TEST": "expected"},
+		envVar:     "TEST",
+		flagVal:    "",
+		defaultVal: "you dun goofed",
+		expected:   "expected",
 	},
 	{
-		name:     "val in env and payload",
-		env:      map[string]string{"TEST": "don't return me"},
-		payload:  map[string]interface{}{"test": "expected"},
-		val:      "test",
-		fallback: "nope",
-		expected: "expected",
+		name:       "val in env and flags",
+		env:        map[string]string{"TEST": "don't return me"},
+		envVar:     "TEST",
+		flagVal:    "expected",
+		defaultVal: "nope",
+		expected:   "expected",
 	},
 	{
-		name:     "val in payload only",
-		env:      map[string]string{},
-		payload:  map[string]interface{}{"test": "expected"},
-		val:      "test",
-		fallback: "nope",
-		expected: "expected",
+		name:       "val in flags only",
+		env:        map[string]string{},
+		envVar:     "TEST",
+		flagVal:    "expected",
+		defaultVal: "nope",
+		expected:   "expected",
 	},
 }
 
@@ -59,7 +59,7 @@ func TestPayloadOrEnv(t *testing.T) {
 			err = os.Setenv(key, val)
 			assert.Nil(t, err)
 		}
-		actual := PayloadOrEnv(testCase.payload, testCase.val, testCase.fallback)
+		actual := FlagEnvOrDefault(testCase.flagVal, testCase.envVar, testCase.defaultVal)
 		assert.Equal(t, testCase.expected, actual, "payloadOrEnv [%s]", testCase.name)
 	}
 }

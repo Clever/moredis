@@ -11,22 +11,63 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// Params holds the params the user passes in for substitution into config templates.
+type Params map[string]string
+
+func (p *Params) Set(value string) error {
+	if err := json.Unmarshal([]byte(value), p); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (p *Params) String() string {
+	return fmt.Sprintf("%v", *p)
+}
+
+func (p *Params) Bson() bson.M {
+	ret := bson.M{}
+	for key, val := range *p {
+		ret[key] = val
+	}
+	return ret
+}
+
+var (
+	redisUrl    string
+	mongoUrl    string
+	mongoDbName string
+	cache       string
+	params      Params
+)
+
+func init() {
+	const (
+		redisUrlUsage = "Redis URL, can also be set via the REDIS_URL environment variable)"
+		mongoUrlUsage = "MongoDB URL, can also be set via the MONGO_URL environment variable"
+		mongoDbUsage  = "MongoDB Database, can also be set via the MONGO_DB environment variable"
+		cacheUsage    = "Which cache to populate"
+		paramsUsage   = "Params used for substitution into queries and collection names in config.yml"
+	)
+
+	flag.StringVar(&redisUrl, "redis_url", "", redisUrlUsage)
+	flag.StringVar(&redisUrl, "r", "", redisUrlUsage+" (shorthand)")
+	flag.StringVar(&mongoUrl, "mongo_url", "", mongoUrlUsage)
+	flag.StringVar(&mongoUrl, "m", "", mongoUrlUsage+" (shorthand)")
+	flag.StringVar(&mongoDbName, "mongo_db", "", mongoDbUsage)
+	flag.StringVar(&mongoDbName, "d", "", mongoDbUsage+" (shorthand)")
+	flag.StringVar(&cache, "cache", "", cacheUsage)
+	flag.StringVar(&cache, "c", "", cacheUsage+" (shorthand)")
+	flag.Var(&params, "params", paramsUsage)
+	flag.Var(&params, "p", paramsUsage+" (shorthand)")
+}
+
 func main() {
 	flag.Parse()
-	if flag.NArg() != 1 {
-		logger.Critical("Got invalid args", logger.M{"NArgs": flag.NArg(), "Args": flag.Args()})
-		PrintUsage()
-		os.Exit(1)
-	}
 
-	var payload map[string]interface{}
-	if err := json.Unmarshal([]byte(flag.Arg(0)), &payload); err != nil {
-		logger.Error("Couldn't unmarshal payload", err)
-	}
-
-	cacheToPopulate, ok := payload["cache"].(string)
-	if !ok {
-		logger.Critical("Missing 'cache' in payload", logger.M{"payload": payload})
+	// cache is the only required parameter
+	if cache == "" {
+		flag.Usage()
 		os.Exit(1)
 	}
 
@@ -35,17 +76,17 @@ func main() {
 		logger.Error("Error loading config.", err)
 	}
 
-	cache, err := config.GetCache(cacheToPopulate)
+	cacheConfig, err := config.GetCache(cache)
 	if err != nil {
 		logger.Error("Cache not found in config.", err)
 	}
 
-	logger.Info("Populating cache.", logger.M{"cache": cacheToPopulate})
+	logger.Info("Populating cache.", logger.M{"cache": cache})
 
 	// set up mongo/redis connections
-	mongoUrl := PayloadOrEnv(payload, "mongo_url", DEFAULT_MONGO_URL)
-	mongoDbName := PayloadOrEnv(payload, "mongo_db", "")
-	redisUrl := PayloadOrEnv(payload, "redis_url", DEFAULT_REDIS_URL)
+	mongoUrl := FlagEnvOrDefault(mongoUrl, "MONGO_URL", DEFAULT_MONGO_URL)
+	mongoDbName := FlagEnvOrDefault(mongoDbName, "MONGO_DB", DEFAULT_MONGO_DB)
+	redisUrl := FlagEnvOrDefault(redisUrl, "REDIS_URL", DEFAULT_REDIS_URL)
 	mongoDb, redisConn, err := SetupDbs(mongoUrl, mongoDbName, redisUrl)
 	if err != nil {
 		logger.Error("Failed to connect to dbs", err)
@@ -54,8 +95,8 @@ func main() {
 	defer redisConn.Close()
 	redisWriter := NewRedisWriter(redisConn)
 
-	for _, collection := range cache.Collections {
-		query, err := ParseQuery(collection.Query, payload)
+	for _, collection := range cacheConfig.Collections {
+		query, err := ParseQuery(collection.Query, params)
 		if err != nil {
 			logger.Error("Failed to parse query", err)
 		}
@@ -72,13 +113,13 @@ func main() {
 		redisWriter.Flush()
 
 		for _, rmap := range collection.Maps {
-			err := UpdateRedisMapReference(redisConn, payload, rmap)
+			err := UpdateRedisMapReference(redisConn, params, rmap)
 			if err != nil {
 				logger.Error("Failed to update map reference", err)
 			}
 		}
 	}
-	logger.Info("Completed populating cache", logger.M{"cache": cacheToPopulate})
+	logger.Info("Completed populating cache", logger.M{"cache": cache})
 }
 
 // ProcessQuery iterates through all of the documents contained within iter, and maps
@@ -124,8 +165,8 @@ func SetRedisHashKeys(conn redis.Conn, collection *CollectionConfig) error {
 
 // UpdateRedisMapReference updates the map specified in redis to point to the newly populated hashes,
 // then deletes the previously referenced hash.  The hash reference is updated atomically.
-func UpdateRedisMapReference(conn redis.Conn, payload map[string]interface{}, mapConfig MapConfig) error {
-	mapName, err := ApplyTemplate(mapConfig.Name, payload)
+func UpdateRedisMapReference(conn redis.Conn, params Params, mapConfig MapConfig) error {
+	mapName, err := ApplyTemplate(mapConfig.Name, params.Bson())
 	if err != nil {
 		return err
 	}
@@ -142,9 +183,4 @@ func UpdateRedisMapReference(conn redis.Conn, payload map[string]interface{}, ma
 	logger.Info("Deleting old referenced map", logger.M{"map": oldMap})
 	conn.Do("DEL", oldMap)
 	return nil
-}
-
-// PrintUsage prints the usage for moredis.
-func PrintUsage() {
-	fmt.Println("Usage: moredis <payload>")
 }
