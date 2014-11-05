@@ -1,7 +1,8 @@
 SHELL := /bin/bash
-PKG = github.com/Clever/moredis
-SUBPKGSREL := $(shell ls -d */ | grep -v bin | grep -v deb)
-SUBPKGS = $(addprefix $(PKG)/,$(SUBPKGSREL))
+PKG = github.com/Clever/moredis/cmd/moredis
+SUBPKGS := \
+github.com/Clever/moredis/moredis \
+github.com/Clever/moredis/logger
 PKGS = $(PKG) $(SUBPKGS)
 VERSION := $(shell cat VERSION)
 EXECUTABLE := moredis
@@ -34,13 +35,13 @@ else
 endif
 
 build/$(EXECUTABLE)-v$(VERSION)-darwin-amd64:
-	GOARCH=amd64 GOOS=darwin go build -o "$@/$(EXECUTABLE)"
+	GOARCH=amd64 GOOS=darwin go build -o "$@/$(EXECUTABLE)" $(PKG)
 	cp config.yml "$@/"
 build/$(EXECUTABLE)-v$(VERSION)-linux-amd64:
-	GOARCH=amd64 GOOS=linux go build -o "$@/$(EXECUTABLE)"
+	GOARCH=amd64 GOOS=linux go build -o "$@/$(EXECUTABLE)" $(PKG)
 	cp config.yml "$@/"
 build/$(EXECUTABLE)-v$(VERSION)-windows-amd64:
-	GOARCH=amd64 GOOS=windows go build -o "$@/$(EXECUTABLE).exe"
+	GOARCH=amd64 GOOS=windows go build -o "$@/$(EXECUTABLE).exe" $(PKG)
 	cp config.yml "$@/"
 build: $(BUILDS)
 %.tar.gz: %

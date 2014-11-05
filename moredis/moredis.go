@@ -1,10 +1,8 @@
-package main
+package moredis
 
 import (
 	"encoding/json"
-	"flag"
 	"fmt"
-	"os"
 
 	"github.com/Clever/moredis/logger"
 	"github.com/garyburd/redigo/redis"
@@ -37,54 +35,14 @@ func (p *Params) Bson() bson.M {
 	return ret
 }
 
-var (
-	redisURL    string
-	mongoURL    string
-	mongoDBName string
-	cache       string
-	params      Params
-)
-
-func init() {
-	// Usage strings in PrintUsage
-	flag.StringVar(&redisURL, "redis_url", "", "")
-	flag.StringVar(&redisURL, "r", "", "")
-	flag.StringVar(&mongoURL, "mongo_url", "", "")
-	flag.StringVar(&mongoURL, "m", "", "")
-	flag.StringVar(&mongoDBName, "mongo_db", "", "")
-	flag.StringVar(&mongoDBName, "d", "", "")
-	flag.StringVar(&cache, "cache", "", "")
-	flag.StringVar(&cache, "c", "", "")
-	flag.Var(&params, "params", "")
-	flag.Var(&params, "p", "")
-}
-
-func main() {
-	flag.Usage = PrintUsage
-	flag.Parse()
-
-	// cache is the only required parameter
-	if cache == "" {
-		flag.Usage()
-		os.Exit(1)
-	}
-
-	conf, err := loadConfig("./config.yml")
-	if err != nil {
-		logger.Error("Error loading config.", err)
-	}
-
-	cacheConfig, err := conf.GetCache(cache)
-	if err != nil {
-		logger.Error("Cache not found in config.", err)
-	}
-
-	logger.Info("Populating cache.", logger.M{"cache": cache})
+// BuildCache builds a redis cache according to the passed in config.
+func BuildCache(cacheConfig CacheConfig, params Params, redisURL string, mongoURL string, mongoDBName string) {
+	logger.Info("Populating cache.", logger.M{"cache": cacheConfig.Name})
 
 	// set up mongo/redis connections
-	mongoURL := FlagEnvOrDefault(mongoURL, "MONGO_URL", DefaultMongoURL)
-	mongoDBName := FlagEnvOrDefault(mongoDBName, "MONGO_DB", DefaultMongoDB)
-	redisURL := FlagEnvOrDefault(redisURL, "REDIS_URL", DefaultRedisURL)
+	mongoURL = FlagEnvOrDefault(mongoURL, "MONGO_URL", DefaultMongoURL)
+	mongoDBName = FlagEnvOrDefault(mongoDBName, "MONGO_DB", DefaultMongoDB)
+	redisURL = FlagEnvOrDefault(redisURL, "REDIS_URL", DefaultRedisURL)
 	mongoDb, redisConn, err := SetupDbs(mongoURL, mongoDBName, redisURL)
 	if err != nil {
 		logger.Error("Failed to connect to dbs", err)
@@ -117,12 +75,12 @@ func main() {
 			}
 		}
 	}
-	logger.Info("Completed populating cache", logger.M{"cache": cache})
+	logger.Info("Completed populating cache", logger.M{"cache": cacheConfig.Name})
 }
 
 // ProcessQuery iterates through all of the documents contained within iter, and maps
 // keys to values in a redis hash according to your mapping config.
-func ProcessQuery(writer RedisWriter, iter MongoIter, maps []mapConfig) error {
+func ProcessQuery(writer RedisWriter, iter MongoIter, maps []MapConfig) error {
 	processed := 0
 	var result bson.M
 	for iter.Next(&result) {
@@ -150,7 +108,7 @@ func ProcessQuery(writer RedisWriter, iter MongoIter, maps []mapConfig) error {
 // SetRedisHashKeys determines the correct keys to use for the redis hashes that
 // will be created to store the mapped values.  These keys are generated in an atomic
 // fashion and will not interfere with any other running instances of moredis
-func SetRedisHashKeys(conn redis.Conn, collection *collectionConfig) error {
+func SetRedisHashKeys(conn redis.Conn, collection *CollectionConfig) error {
 	for ix := range collection.Maps {
 		tempKey, err := redis.Int64(conn.Do("INCR", "moredis:mapindexcounter"))
 		if err != nil {
@@ -163,7 +121,7 @@ func SetRedisHashKeys(conn redis.Conn, collection *collectionConfig) error {
 
 // UpdateRedisMapReference updates the map specified in redis to point to the newly populated hashes,
 // then deletes the previously referenced hash.  The hash reference is updated atomically.
-func UpdateRedisMapReference(conn redis.Conn, params Params, mapConfig mapConfig) error {
+func UpdateRedisMapReference(conn redis.Conn, params Params, mapConfig MapConfig) error {
 	mapName, err := ApplyTemplate(mapConfig.Name, params.Bson())
 	if err != nil {
 		return err
@@ -181,17 +139,4 @@ func UpdateRedisMapReference(conn redis.Conn, params Params, mapConfig mapConfig
 	logger.Info("Deleting old referenced map", logger.M{"map": oldMap})
 	conn.Do("DEL", oldMap)
 	return nil
-}
-
-// PrintUsage is used to replace flag.Usage, which is pretty terrible.
-func PrintUsage() {
-	var usage = `Usage of ./moredis:
-  -c, -cache        Which cache to populate (REQUIRED)
-  -d, -mongo_db     MongoDB Database, can also be set via the MONGO_DB environment variable
-  -m, -mongo_url    MongoDB URL, can also be set via the MONGO_URL environment variable
-  -p, -params       JSON object with params used for substitution into queries and collection names in config.yml
-  -r, -redis_url    Redis URL, can also be set via the REDIS_URL environment variable
-  -h, -help         Print this usage message.
-`
-	fmt.Fprint(os.Stderr, usage)
 }

@@ -1,4 +1,4 @@
-package main
+package moredis
 
 import (
 	"bytes"
@@ -59,7 +59,7 @@ func (m *MockIter) Next(result interface{}) bool {
 
 func TestProcessQuery(t *testing.T) {
 	iter := NewMockIter([]bson.M{{"test": "1", "val": "expected"}, {"test": "2", "val": "expected"}})
-	maps := []mapConfig{
+	maps := []MapConfig{
 		{
 			Key:     "{{.test}}",
 			Value:   "{{.val}}",

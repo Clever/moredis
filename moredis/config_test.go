@@ -1,4 +1,4 @@
-package main
+package moredis
 
 import (
 	"testing"
@@ -6,15 +6,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var sampleConfig = config{
-	Caches: []cacheConfig{
+var sampleConfig = Config{
+	Caches: []CacheConfig{
 		{
 			Name:        "cache1",
-			Collections: []collectionConfig{},
+			Collections: []CollectionConfig{},
 		},
 		{
 			Name:        "cache2",
-			Collections: []collectionConfig{},
+			Collections: []CollectionConfig{},
 		},
 	},
 }
