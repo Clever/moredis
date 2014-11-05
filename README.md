@@ -26,12 +26,13 @@ Usage of ./moredis:
   -m, -mongo_url    MongoDB URL, can also be set via the MONGO_URL environment variable
   -p, -params       JSON object with params used for substitution into queries and collection names in config.yml
   -r, -redis_url    Redis URL, can also be set via the REDIS_URL environment variable
+  -f, -conf_file    Config file, defaults to ./config.yml
   -h, -help         Print this usage message.
 ```
 
 ## Configuration
 
-moredis caches are configured using a file named config.yml which must be present in the same folder as the moredis executable.  This repo contains a sample config.yml which you will need to modify to suit your needs.  The [sample](./config.yml) has comments to describe the various fields and their purposes.
+moredis cache configuration is done using yaml.  You can specify a config file to use, or moredis will default to config.yml in the same folder as the moredis executable.  This repo contains a sample config.yml which you can to modify to suit your needs.  The [sample](./config.yml) has comments to describe the various fields and their purposes.
 
 You also need to provide moredis with connection parameters for both your MongoDB instance and Redis instance.  These settings can be set with either command line flags or environment variables (with the command line flags taking precedence).  URL settings can contain the port, if omitted the default MongoDB and Redis ports will be used (27017 and 6379 respectively).
 

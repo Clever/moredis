@@ -55,5 +55,5 @@ func (c Config) GetCache(cacheName string) (CacheConfig, error) {
 			return cache, nil
 		}
 	}
-	return CacheConfig{}, errors.New("Cache not found in config")
+	return CacheConfig{}, errors.New("cache not found in config")
 }

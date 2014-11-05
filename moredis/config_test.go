@@ -29,5 +29,5 @@ func TestGetCache(t *testing.T) {
 	assert.Equal(t, "cache2", cacheTwo.Name)
 
 	_, err = sampleConfig.GetCache("cache3")
-	assert.Error(t, err)
+	assert.EqualError(t, err, "cache not found in config")
 }

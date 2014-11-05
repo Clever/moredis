@@ -10,14 +10,18 @@ import (
 )
 
 var (
-	redisURL    string
-	mongoURL    string
-	mongoDBName string
-	cache       string
-	params      moredis.Params
+	redisURL       string
+	mongoURL       string
+	mongoDBName    string
+	cache          string
+	params         moredis.Params
+	configFilePath string
 )
 
 func init() {
+	const (
+		defaultFilePath = "./config.yml"
+	)
 	// Usage strings in PrintUsage
 	flag.StringVar(&redisURL, "redis_url", "", "")
 	flag.StringVar(&redisURL, "r", "", "")
@@ -29,6 +33,8 @@ func init() {
 	flag.StringVar(&cache, "c", "", "")
 	flag.Var(&params, "params", "")
 	flag.Var(&params, "p", "")
+	flag.StringVar(&configFilePath, "conf_file", defaultFilePath, "")
+	flag.StringVar(&configFilePath, "f", defaultFilePath, "")
 }
 
 func main() {
@@ -37,11 +43,12 @@ func main() {
 
 	// cache is the only required parameter
 	if cache == "" {
+		fmt.Fprintln(os.Stderr, "Missing 'cache' argument")
 		flag.Usage()
 		os.Exit(1)
 	}
 
-	conf, err := moredis.LoadConfig("./config.yml")
+	conf, err := moredis.LoadConfig(configFilePath)
 	if err != nil {
 		logger.Error("Error loading config.", err)
 	}
@@ -62,7 +69,8 @@ func PrintUsage() {
   -m, -mongo_url    MongoDB URL, can also be set via the MONGO_URL environment variable
   -p, -params       JSON object with params used for substitution into queries and collection names in config.yml
   -r, -redis_url    Redis URL, can also be set via the REDIS_URL environment variable
-  -h, -help         Print this usage message.
+  -f, -conf_file    Config file, defaults to ./config.yml
+  -h, -help         Print this usage message
 `
 	fmt.Fprint(os.Stderr, usage)
 }
