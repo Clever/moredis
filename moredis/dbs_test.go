@@ -22,7 +22,9 @@ func doWrites(b *testing.B, writer RedisWriter, mapkey string, data []string) {
 			b.Fatal(err)
 		}
 	}
-	writer.Flush()
+	if err := writer.Flush(); err != nil {
+		b.Fatal(err)
+	}
 }
 
 func benchmarkRedisWriter(b *testing.B, flushInterval int) {

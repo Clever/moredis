@@ -69,7 +69,10 @@ func BuildCache(cacheConfig CacheConfig, params Params, redisURL string, mongoUR
 			logger.Error("Error processing query", err)
 			return err
 		}
-		redisWriter.Flush()
+		if err := redisWriter.Flush(); err != nil {
+			logger.Error("Error flushing redis conn", err)
+			return err
+		}
 
 		for _, rmap := range collection.Maps {
 			err := UpdateRedisMapReference(redisConn, params, rmap)
