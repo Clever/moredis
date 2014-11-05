@@ -58,7 +58,10 @@ func main() {
 		logger.Error("Cache not found in config.", err)
 	}
 
-	moredis.BuildCache(cacheConfig, params, redisURL, mongoURL, mongoDBName)
+	if err := moredis.BuildCache(cacheConfig, params, redisURL, mongoURL, mongoDBName); err != nil {
+		fmt.Fprint(os.Stderr, err)
+		os.Exit(1)
+	}
 }
 
 // PrintUsage is used to replace flag.Usage, which is pretty terrible.

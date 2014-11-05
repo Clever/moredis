@@ -39,17 +39,15 @@ func Critical(title string, data M) {
 	logWithLevel(title, CRITICAL, data)
 }
 
-// Error logs an error at the error level and exits.
+// Error logs an error at the error level
 func Error(title string, err error) {
-	formatted := kayvee.FormatLog("moredis", ERROR, title, map[string]interface{}{"error": fmt.Sprint(err)})
-	log.Fatal(formatted)
+	logWithLevel(title, ERROR, M{"error": fmt.Sprint(err)})
 }
 
-// ErrorDetailed logs an error at the error level, along with an extra info you can provide, then exits.
+// ErrorDetailed logs an error at the error level, along with an extra info you can provide
 func ErrorDetailed(title string, err error, extras M) {
 	extras["error"] = fmt.Sprint(err)
-	formatted := kayvee.FormatLog("moredis", ERROR, title, extras)
-	log.Fatal(formatted)
+	logWithLevel(title, ERROR, M{"error": fmt.Sprint(err)})
 }
 
 func logWithLevel(title string, level string, data M) {

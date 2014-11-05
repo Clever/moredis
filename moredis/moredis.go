@@ -36,7 +36,7 @@ func (p *Params) Bson() bson.M {
 }
 
 // BuildCache builds a redis cache according to the passed in config.
-func BuildCache(cacheConfig CacheConfig, params Params, redisURL string, mongoURL string, mongoDBName string) {
+func BuildCache(cacheConfig CacheConfig, params Params, redisURL string, mongoURL string, mongoDBName string) error {
 	logger.Info("Populating cache.", logger.M{"cache": cacheConfig.Name})
 
 	// set up mongo/redis connections
@@ -55,16 +55,19 @@ func BuildCache(cacheConfig CacheConfig, params Params, redisURL string, mongoUR
 		query, err := ParseQuery(collection.Query, params)
 		if err != nil {
 			logger.Error("Failed to parse query", err)
+			return err
 		}
 
 		if err := SetRedisHashKeys(redisConn, &collection); err != nil {
 			logger.Error("Error setting up redis map keys", err)
+			return err
 		}
 
 		logger.Info("Processing query for collection", logger.M{"query": query, "collection": collection.Collection})
 		iter := mongoDb.C(collection.Collection).Find(query).Iter()
 		if err := ProcessQuery(redisWriter, iter, collection.Maps); err != nil {
 			logger.Error("Error processing query", err)
+			return err
 		}
 		redisWriter.Flush()
 
@@ -72,10 +75,12 @@ func BuildCache(cacheConfig CacheConfig, params Params, redisURL string, mongoUR
 			err := UpdateRedisMapReference(redisConn, params, rmap)
 			if err != nil {
 				logger.Error("Failed to update map reference", err)
+				return err
 			}
 		}
 	}
 	logger.Info("Completed populating cache", logger.M{"cache": cacheConfig.Name})
+	return nil
 }
 
 // ProcessQuery iterates through all of the documents contained within iter, and maps

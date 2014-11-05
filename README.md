@@ -170,10 +170,16 @@ moredis can also be used as a library, for example:
 ```go
 package main
 
-import "github.com/Clever/moredis/moredis"
+import (
+  "github.com/Clever/moredis/moredis"
+  "log"
+)
 
 func main() {
   config, _ := moredis.LoadConfig("./config.yml")
-  moredis.BuildCache(config, moredis.Params{}, "", "", "")
+  err := moredis.BuildCache(config, moredis.Params{}, "", "", "")
+  if err != nil {
+    log.Fatal(err)
+  }
 }
 ```
