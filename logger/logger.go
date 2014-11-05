@@ -47,7 +47,7 @@ func Error(title string, err error) {
 // ErrorDetailed logs an error at the error level, along with an extra info you can provide
 func ErrorDetailed(title string, err error, extras M) {
 	extras["error"] = fmt.Sprint(err)
-	logWithLevel(title, ERROR, M{"error": fmt.Sprint(err)})
+	logWithLevel(title, ERROR, extras)
 }
 
 func logWithLevel(title string, level string, data M) {
