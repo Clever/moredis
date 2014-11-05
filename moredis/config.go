@@ -4,7 +4,7 @@ import (
 	"errors"
 	"io/ioutil"
 
-	"gopkg.in/v1/yaml"
+	"gopkg.in/v2/yaml"
 )
 
 // Config holds the config loaded from config.yml
