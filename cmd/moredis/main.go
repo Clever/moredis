@@ -51,11 +51,13 @@ func main() {
 	conf, err := moredis.LoadConfig(configFilePath)
 	if err != nil {
 		logger.Error("Error loading config.", err)
+		os.Exit(1)
 	}
 
 	cacheConfig, err := conf.GetCache(cache)
 	if err != nil {
 		logger.Error("Cache not found in config.", err)
+		os.Exit(1)
 	}
 
 	if err := moredis.BuildCache(cacheConfig, params, redisURL, mongoURL, mongoDBName); err != nil {

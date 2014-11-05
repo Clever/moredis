@@ -146,6 +146,8 @@ func UpdateRedisMapReference(conn redis.Conn, params Params, mapConfig MapConfig
 	}
 
 	logger.Info("Deleting old referenced map", logger.M{"map": oldMap})
-	conn.Do("DEL", oldMap)
+	if _, err := conn.Do("DEL", oldMap); err != nil {
+		return err
+	}
 	return nil
 }
