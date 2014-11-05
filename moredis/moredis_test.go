@@ -57,6 +57,10 @@ func (m *MockIter) Next(result interface{}) bool {
 	return true
 }
 
+func (m *MockIter) Close() error {
+	return nil
+}
+
 func TestProcessQuery(t *testing.T) {
 	iter := NewMockIter([]bson.M{{"test": "1", "val": "expected"}, {"test": "2", "val": "expected"}})
 	maps := []MapConfig{

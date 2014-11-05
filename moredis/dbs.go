@@ -36,6 +36,7 @@ func SetupDbs(mongoURL, mongoDBName, redisURL string) (*mgo.Database, redis.Conn
 // The main purpose of breaking this out into an interface is for ease of mocking in tests.
 type MongoIter interface {
 	Next(result interface{}) bool
+	Close() error
 }
 
 // RedisWriter is an interface for types that can write to redis using send/flush (pipelined operations)
