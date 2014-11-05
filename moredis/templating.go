@@ -53,7 +53,7 @@ func ApplyTemplate(templateString string, payload bson.M) (string, error) {
 		return "", err
 	}
 	var b bytes.Buffer
-	if err = tmpl.Execute(&b, payload); err != nil {
+	if err := tmpl.Execute(&b, payload); err != nil {
 		return "", err
 	}
 	return b.String(), nil
@@ -72,7 +72,7 @@ func ParseQuery(query string, params Params) (map[string]interface{}, error) {
 		return map[string]interface{}{}, err
 	}
 	var queryObject map[string]interface{}
-	if err = json.Unmarshal([]byte(parsed), &queryObject); err != nil {
+	if err := json.Unmarshal([]byte(parsed), &queryObject); err != nil {
 		return map[string]interface{}{}, err
 	}
 	setObjectIds(queryObject)

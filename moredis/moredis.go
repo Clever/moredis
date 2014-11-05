@@ -57,13 +57,13 @@ func BuildCache(cacheConfig CacheConfig, params Params, redisURL string, mongoUR
 			logger.Error("Failed to parse query", err)
 		}
 
-		if err = SetRedisHashKeys(redisConn, &collection); err != nil {
+		if err := SetRedisHashKeys(redisConn, &collection); err != nil {
 			logger.Error("Error setting up redis map keys", err)
 		}
 
 		logger.Info("Processing query for collection", logger.M{"query": query, "collection": collection.Collection})
 		iter := mongoDb.C(collection.Collection).Find(query).Iter()
-		if err = ProcessQuery(redisWriter, iter, collection.Maps); err != nil {
+		if err := ProcessQuery(redisWriter, iter, collection.Maps); err != nil {
 			logger.Error("Error processing query", err)
 		}
 		redisWriter.Flush()
