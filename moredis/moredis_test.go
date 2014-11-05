@@ -1,8 +1,7 @@
 package moredis
 
 import (
-	"bytes"
-	"fmt"
+	"errors"
 	"reflect"
 	"testing"
 
@@ -21,13 +20,14 @@ func NewMockRedisWriter() *MockRedisWriter {
 }
 
 func (m *MockRedisWriter) Send(cmd string, args ...interface{}) error {
-	var b bytes.Buffer
-	b.Write([]byte(cmd))
 	for _, arg := range args {
-		b.Write([]byte(" "))
-		b.Write([]byte(fmt.Sprint(arg)))
+		argStr, ok := arg.(string)
+		if !ok {
+			return errors.New("non string arg to Send")
+		}
+		cmd += " " + argStr
 	}
-	m.Commands = append(m.Commands, b.String())
+	m.Commands = append(m.Commands, cmd)
 	return nil
 }
 

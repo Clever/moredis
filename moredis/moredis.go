@@ -75,8 +75,7 @@ func BuildCache(cacheConfig CacheConfig, params Params, redisURL string, mongoUR
 		}
 
 		for _, rmap := range collection.Maps {
-			err := UpdateRedisMapReference(redisConn, params, rmap)
-			if err != nil {
+			if err := UpdateRedisMapReference(redisConn, params, rmap); err != nil {
 				logger.Error("Failed to update map reference", err)
 				return err
 			}
