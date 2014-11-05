@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/clever/kayvee-go"
+	"github.com/Clever/kayvee-go"
 )
 
 // M is an alias for map[string]interface{} to make log lines less painful to write.

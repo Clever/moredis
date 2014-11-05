@@ -44,6 +44,25 @@ func TestSafeToLower(t *testing.T) {
 	}
 }
 
+type toSetTestSpec struct {
+	input    interface{}
+	expected string
+}
+
+var toSetTests = []toSetTestSpec{
+	{bson.M{"key1": true, "key2": true}, "[key1,key2]"},
+	{bson.M{"key1": true, "key2": 5}, ""},
+	{bson.M{"key1": "true", "key2": "t"}, "[key1,key2]"},
+	{nil, ""},
+}
+
+func TestToSet(t *testing.T) {
+	for _, testCase := range toSetTests {
+		actual := toSet(testCase.input)
+		assert.Equal(t, testCase.expected, actual, "toSet(%v) failed", testCase.input)
+	}
+}
+
 type applyTemplateTestSpec struct {
 	name           string
 	templateString string

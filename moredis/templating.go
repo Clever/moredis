@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"sort"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -15,6 +17,7 @@ import (
 var funcMap = template.FuncMap{
 	"toLower":  safeToLower,
 	"toString": toString,
+	"toSet":    toSet,
 }
 
 // toString is a function that is exported to templates to allow
@@ -42,6 +45,39 @@ func safeToLower(toConvert interface{}) string {
 	default:
 		return ""
 	}
+}
+
+// toSet is a function that is exported to templates as 'toSet'
+// to allow printing sets of the bson.M{'key1': true, 'key2': true, ...}
+// as stringified sets [key1, key2, ...].  For non-sets, this will
+// return the empty string.
+func toSet(toConvert interface{}) string {
+	switch toConvert := toConvert.(type) {
+	case bson.M:
+		set := make([]string, 0, len(toConvert))
+		for key, val := range toConvert {
+			switch val := val.(type) {
+			case bool:
+				if !val {
+					return ""
+				}
+			case string:
+				valBool, err := strconv.ParseBool(val)
+				if err != nil || !valBool {
+					return ""
+				}
+			default:
+				return ""
+			}
+			set = append(set, key)
+		}
+		// sort here so that the order is determinate, otherwise testing is more
+		// difficult
+		sort.Strings(set)
+		return "[" + strings.Join(set, ",") + "]"
+	}
+
+	return ""
 }
 
 // ApplyTemplate takes a template string and a map of values to use
