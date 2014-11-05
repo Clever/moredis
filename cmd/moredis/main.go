@@ -9,6 +9,13 @@ import (
 	"github.com/Clever/moredis/moredis"
 )
 
+// Default database connection parameters
+const (
+	DefaultMongoURL = "localhost:27017"
+	DefaultMongoDB  = ""
+	DefaultRedisURL = "localhost:6379"
+)
+
 var (
 	redisURL       string
 	mongoURL       string
@@ -48,6 +55,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	// grab connection from env or default if not in flags
+	mongoURL = FlagEnvOrDefault(mongoURL, "MONGO_URL", DefaultMongoURL)
+	mongoDBName = FlagEnvOrDefault(mongoDBName, "MONGO_DB", DefaultMongoDB)
+	redisURL = FlagEnvOrDefault(redisURL, "REDIS_URL", DefaultRedisURL)
+
 	conf, err := moredis.LoadConfig(configFilePath)
 	if err != nil {
 		logger.Error("Error loading config.", err)
@@ -78,4 +90,17 @@ func PrintUsage() {
   -h, -help         Print this usage message
 `
 	fmt.Fprint(os.Stderr, usage)
+}
+
+// FlagEnvOrDefault takes in the value returned from flag parsing, and environment variable to check, and a default value.
+// If the flag was not set, it tries to retrieve the value from environment variables.  If it is not found there it returns
+// the default value.
+func FlagEnvOrDefault(flagVal, envVar, defaultValue string) string {
+	if flagVal != "" {
+		return flagVal
+	}
+	if fromEnv := os.Getenv(envVar); fromEnv != "" {
+		return fromEnv
+	}
+	return defaultValue
 }

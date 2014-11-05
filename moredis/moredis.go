@@ -40,9 +40,6 @@ func BuildCache(cacheConfig CacheConfig, params Params, redisURL string, mongoUR
 	logger.Info("Populating cache.", logger.M{"cache": cacheConfig.Name})
 
 	// set up mongo/redis connections
-	mongoURL = FlagEnvOrDefault(mongoURL, "MONGO_URL", DefaultMongoURL)
-	mongoDBName = FlagEnvOrDefault(mongoDBName, "MONGO_DB", DefaultMongoDB)
-	redisURL = FlagEnvOrDefault(redisURL, "REDIS_URL", DefaultRedisURL)
 	mongoDb, redisConn, err := SetupDbs(mongoURL, mongoDBName, redisURL)
 	if err != nil {
 		logger.Error("Failed to connect to dbs", err)

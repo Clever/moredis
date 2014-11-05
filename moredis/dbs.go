@@ -7,13 +7,6 @@ import (
 	"github.com/Clever/moredis/logger"
 )
 
-// Default database connection parameters
-const (
-	DefaultMongoURL = "localhost:27017"
-	DefaultMongoDB  = ""
-	DefaultRedisURL = "localhost:6379"
-)
-
 // SetupDbs takes connection parameters for redis and mongo and returns active sessions.
 // The caller is responsible for closing the returned connections.
 func SetupDbs(mongoURL, mongoDBName, redisURL string) (*mgo.Database, redis.Conn, error) {
