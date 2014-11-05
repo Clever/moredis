@@ -18,6 +18,17 @@ In a nutshell, moredis works by taking a user specified MongoDB query, then for 
 
 For more specific examples, see [Examples](#examples)
 
+## Usage
+```bash
+Usage of ./moredis:
+  -c, -cache        Which cache to populate (REQUIRED)
+  -d, -mongo_db     MongoDB Database, can also be set via the MONGO_DB environment variable
+  -m, -mongo_url    MongoDB URL, can also be set via the MONGO_URL environment variable
+  -p, -params       JSON object with params used for substitution into queries and collection names in config.yml
+  -r, -redis_url    Redis URL, can also be set via the REDIS_URL environment variable
+  -h, -help         Print this usage message.
+```
+
 ## Configuration
 
 moredis caches are configured using a file named config.yml which must be present in the same folder as the moredis executable.  This repo contains a sample config.yml which you will need to modify to suit your needs.  The [sample](./config.yml) has comments to describe the various fields and their purposes.
@@ -38,17 +49,6 @@ For each, the settings locations are:
     * flag: -r
     * env: REDIS_URL
     * default: localhost
-
-## Usage
-```bash
-Usage of ./moredis:
-  -c, -cache        Which cache to populate (REQUIRED)
-  -d, -mongo_db     MongoDB Database, can also be set via the MONGO_DB environment variable
-  -m, -mongo_url    MongoDB URL, can also be set via the MONGO_URL environment variable
-  -p, -params       JSON object with params used for substitution into queries and collection names in config.yml
-  -r, -redis_url    Redis URL, can also be set via the REDIS_URL environment variable
-  -h, -help         Print this usage message.
-```
 
 ## Examples
 
@@ -160,4 +160,19 @@ You can run tests with:
 
 ```bash
 $ make test
+```
+
+## Using as a library
+
+moredis can also be used as a library, for example:
+
+```go
+package main
+
+import "github.com/Clever/moredis/moredis"
+
+func main() {
+  config, _ := moredis.LoadConfig("./config.yml")
+  moredis.BuildCache(config, moredis.Params{}, "", "", "")
+}
 ```
