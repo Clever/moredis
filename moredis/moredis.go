@@ -44,6 +44,7 @@ func BuildCache(cacheConfig CacheConfig, params Params, redisURL string, mongoUR
 	mongoDb, redisConn, err := SetupDbs(mongoURL, mongoDBName, redisURL)
 	if err != nil {
 		logger.Error("Failed to connect to dbs", err)
+		return err
 	}
 	defer mongoDb.Session.Close()
 	defer redisConn.Close()
