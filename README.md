@@ -1,20 +1,20 @@
 # moredis
 
-moredis is a tool to sync data from MongoDB into redis.
+`moredis` is a tool to sync data from MongoDB into redis.
 
 ## Motivation
 
 MongoDB (and any database for that matter) becomes unwieldy if you have many applications using it for many different purposes.
 Oftentimes building out your infrastructure like this makes sense to start, but as time goes on and the number of applications increases it becomes harder to do things like diagnose database performance problems and make application-specific database optimizations.
 
-moredis is a tool that reduces an application's direct dependency on MongoDB by syncing specific data out of MongoDB and into redis.
+`moredis` is a tool that reduces an application's direct dependency on MongoDB by syncing specific data out of MongoDB and into redis.
 The data is synced in a way that optimizes for the query patterns needed by the application, so that MongoDB to no longer lies in the request path of the application.
 
 See this talk by foursquare for more detailed motivation behind breaking up MongoDB monoliths into a more service-oriented persistence layer: [Service Oriented Clusters](https://www.mongodb.com/presentations/service-oriented-clusters-foursquare-0).
 
 ## How it Works
 
-In a nutshell, moredis works by taking a user specified MongoDB query, then for each returned document, mapping some some value in the document to another value in that document using a redis hash.  moredis also allows you to parameterize your query with values passed in at runtime.
+In a nutshell, `moredis` works by taking a user specified MongoDB query, then for each returned document, mapping some some value in the document to another value in that document using a redis hash.  `moredis` also allows you to parameterize your query with values passed in at runtime.
 
 For more specific examples, see [Examples](#examples)
 
@@ -31,9 +31,9 @@ Usage of ./moredis:
 
 ## Configuration
 
-moredis cache configuration is done using yaml.  You can specify a config file to use, or moredis will default to config.yml in the same folder as the moredis executable.  This repo contains a sample config.yml which you can to modify to suit your needs.  The [sample](./config.yml) has comments to describe the various fields and their purposes.
+`moredis` cache configuration is done using yaml.  You can specify a config file to use, or `moredis` will default to config.yml in the same folder as the `moredis` executable.  This repo contains a sample config.yml which you can to modify to suit your needs.  The [sample](./config.yml) has comments to describe the various fields and their purposes.
 
-You also need to provide moredis with connection parameters for both your MongoDB instance and Redis instance.  These settings can be set with either command line flags or environment variables (with the command line flags taking precedence).  Mongo URL should be a MongoDB connection string (exact form expected can be found [in the mgo docs](http://godoc.org/gopkg.in/mgo.v2#Dial)).  Redis URL should be in the form "host:port".
+You also need to provide `moredis` with connection parameters for both your MongoDB instance and Redis instance.  These settings can be set with either command line flags or environment variables (with the command line flags taking precedence).  Mongo URL should be a MongoDB connection string (exact form expected can be found [in the mgo docs](http://godoc.org/gopkg.in/mgo.v2#Dial)).  Redis URL should be in the form "host:port".
 
 For each, the settings locations are:
 
@@ -62,7 +62,7 @@ Lets say you have a MongoDB collection called 'users', and in this collection yo
 }
 ```
 
-Now imagine you were writing a service which required very fast lookups of ids by email in a case-insensitive way.  You could accomplish this with the following moredis configuration:
+Now imagine you were writing a service which required very fast lookups of ids by email in a case-insensitive way.  You could accomplish this with the following `moredis` configuration:
 
 ```yaml
 caches:
@@ -77,7 +77,7 @@ caches:
             val: '{{toString ._id}}'
 ```
 
-Then run moredis with:
+Then run `moredis` with:
 
 ```bash
 $ ./moredis -c demo-cache
@@ -97,7 +97,7 @@ After this runs, you will have a key in redis called 'users:email'.  This value 
 
 That's great if you want to create the mapping for every document in a collection, but often you only want to create the mapping for some subset of documents in a collection.  The natural way is to use a query to find the set of documents to operate on (i.e. only for users who are tagged with a specific group).
 
-With moredis you can do this by specifying a query in the above config like so:
+With `moredis` you can do this by specifying a query in the above config like so:
 
 ```yaml
 caches:
@@ -116,7 +116,7 @@ With this config, we will now only do the mapping for documents in the user coll
 
 ### Parameterizing your query
 
-To take this example one step further, not only do you only want to create the cache for a specific group, you want to be able to specify this group at runtime without modifying your config.yml.  With moredis, you can do this by taking advantage of parameterization in your config, then you can pass in the parameters you want to use on the command line.
+To take this example one step further, not only do you only want to create the cache for a specific group, you want to be able to specify this group at runtime without modifying your config.yml.  With `moredis`, you can do this by taking advantage of parameterization in your config, then you can pass in the parameters you want to use on the command line.
 
 To accomplish passing the group id in at runtime, we could modify our config to now look like:
 
@@ -143,11 +143,11 @@ The result of this run will be the same as from the previous example, except the
 
 ## Installation
 
-You can grab the latest moredis release for your platform from the [Releases](https://github.com/Clever/moredis/releases) page.  Then, just extract, configure, and run.
+You can grab the latest `moredis` release for your platform from the [Releases](https://github.com/Clever/moredis/releases) page.  Then, just extract, configure, and run.
 
 ## Local development
 
-You can grab moredis for local development in the usual golang way with:
+You can grab `moredis` for local development in the usual golang way with:
 
 ```bash
 $ go get github.com/Clever/moredis
@@ -161,7 +161,7 @@ $ make test
 
 ## Using as a library
 
-moredis can also be used as a library, for example:
+`moredis` can also be used as a library, for example:
 
 ```go
 package main
@@ -173,7 +173,7 @@ import (
 
 func main() {
   config, _ := moredis.LoadConfig("./config.yml")
-  err := moredis.BuildCache(config, moredis.Params{}, "", "", "")
+  err := moredis.BuildCache(config, moredis.Params{}, "", "")
   if err != nil {
     log.Fatal(err)
   }
