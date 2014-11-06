@@ -37,11 +37,11 @@ func (p *Params) Bson() bson.M {
 }
 
 // BuildCache builds a redis cache according to the passed in config.
-func BuildCache(cacheConfig CacheConfig, params Params, redisURL string, mongoURL string, mongoDBName string) error {
+func BuildCache(cacheConfig CacheConfig, params Params, redisURL string, mongoURL string) error {
 	logger.Info("Populating cache.", logger.M{"cache": cacheConfig.Name})
 
 	// set up mongo/redis connections
-	mongoDb, redisConn, err := SetupDbs(mongoURL, mongoDBName, redisURL)
+	mongoDb, redisConn, err := SetupDbs(mongoURL, redisURL)
 	if err != nil {
 		logger.Error("Failed to connect to dbs", err)
 		return err

@@ -12,14 +12,12 @@ import (
 // Default database connection parameters
 const (
 	DefaultMongoURL = "localhost:27017"
-	DefaultMongoDB  = ""
 	DefaultRedisURL = "localhost:6379"
 )
 
 var (
 	redisURL       string
 	mongoURL       string
-	mongoDBName    string
 	cache          string
 	params         moredis.Params
 	configFilePath string
@@ -34,8 +32,6 @@ func init() {
 	flag.StringVar(&redisURL, "r", "", "")
 	flag.StringVar(&mongoURL, "mongo_url", "", "")
 	flag.StringVar(&mongoURL, "m", "", "")
-	flag.StringVar(&mongoDBName, "mongo_db", "", "")
-	flag.StringVar(&mongoDBName, "d", "", "")
 	flag.StringVar(&cache, "cache", "", "")
 	flag.StringVar(&cache, "c", "", "")
 	flag.Var(&params, "params", "")
@@ -57,7 +53,6 @@ func main() {
 
 	// grab connection from env or default if not in flags
 	mongoURL = FlagEnvOrDefault(mongoURL, "MONGO_URL", DefaultMongoURL)
-	mongoDBName = FlagEnvOrDefault(mongoDBName, "MONGO_DB", DefaultMongoDB)
 	redisURL = FlagEnvOrDefault(redisURL, "REDIS_URL", DefaultRedisURL)
 
 	conf, err := moredis.LoadConfig(configFilePath)
@@ -72,7 +67,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := moredis.BuildCache(cacheConfig, params, redisURL, mongoURL, mongoDBName); err != nil {
+	if err := moredis.BuildCache(cacheConfig, params, redisURL, mongoURL); err != nil {
 		fmt.Fprint(os.Stderr, err)
 		os.Exit(1)
 	}
@@ -82,7 +77,6 @@ func main() {
 func PrintUsage() {
 	var usage = `Usage of ./moredis:
   -c, -cache        Which cache to populate (REQUIRED)
-  -d, -mongo_db     MongoDB Database, can also be set via the MONGO_DB environment variable
   -m, -mongo_url    MongoDB URL, can also be set via the MONGO_URL environment variable
   -p, -params       JSON object with params used for substitution into queries and collection names in config.yml
   -r, -redis_url    Redis URL, can also be set via the REDIS_URL environment variable

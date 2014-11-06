@@ -9,13 +9,14 @@ import (
 
 // SetupDbs takes connection parameters for redis and mongo and returns active sessions.
 // The caller is responsible for closing the returned connections.
-func SetupDbs(mongoURL, mongoDBName, redisURL string) (*mgo.Database, redis.Conn, error) {
+func SetupDbs(mongoURL, redisURL string) (*mgo.Database, redis.Conn, error) {
 	mongoSession, err := mgo.Dial(mongoURL)
 	if err != nil {
 		return nil, nil, err
 	}
-	mongoDB := mongoSession.DB(mongoDBName)
-	logger.Info("Connected to mongo", logger.M{"mongo_url": mongoURL, "mongo_db": mongoDBName})
+	// empty db string uses the db from the connection url
+	mongoDB := mongoSession.DB("")
+	logger.Info("Connected to mongo", logger.M{"mongo_url": mongoURL})
 
 	redisConn, err := redis.Dial("tcp", redisURL)
 	if err != nil {

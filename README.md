@@ -22,7 +22,6 @@ For more specific examples, see [Examples](#examples)
 ```bash
 Usage of ./moredis:
   -c, -cache        Which cache to populate (REQUIRED)
-  -d, -mongo_db     MongoDB Database, can also be set via the MONGO_DB environment variable
   -m, -mongo_url    MongoDB URL, can also be set via the MONGO_URL environment variable
   -p, -params       JSON object with params used for substitution into queries and collection names in config.yml
   -r, -redis_url    Redis URL, can also be set via the REDIS_URL environment variable
@@ -34,7 +33,7 @@ Usage of ./moredis:
 
 moredis cache configuration is done using yaml.  You can specify a config file to use, or moredis will default to config.yml in the same folder as the moredis executable.  This repo contains a sample config.yml which you can to modify to suit your needs.  The [sample](./config.yml) has comments to describe the various fields and their purposes.
 
-You also need to provide moredis with connection parameters for both your MongoDB instance and Redis instance.  These settings can be set with either command line flags or environment variables (with the command line flags taking precedence).  URL settings can contain the port, if omitted the default MongoDB and Redis ports will be used (27017 and 6379 respectively).
+You also need to provide moredis with connection parameters for both your MongoDB instance and Redis instance.  These settings can be set with either command line flags or environment variables (with the command line flags taking precedence).  Mongo URL should be a MongoDB connection string (exact form expected can be found [in the mgo docs](http://godoc.org/gopkg.in/mgo.v2#Dial)).  Redis URL should be in the form "host:port".
 
 For each, the settings locations are:
 
@@ -42,10 +41,7 @@ For each, the settings locations are:
     * flag: -m
     * env: MONGO_URL
     * default: localhost
-* Mongo DB
-    * flag: -d
-    * env: MONGO_DB
-    * default: ""
+
 * Redis URL
     * flag: -r
     * env: REDIS_URL
