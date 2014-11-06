@@ -80,6 +80,25 @@ func toSet(toConvert interface{}) string {
 	return ""
 }
 
+// ParseTemplates takes a collection config and parses the templates
+// for all of the contained maps.
+func ParseTemplates(collection *CollectionConfig) error {
+	for ix, rmap := range collection.Maps {
+		keyTmpl, err := template.New(rmap.HashKey + ":key").Funcs(funcMap).Parse(rmap.Key)
+		if err != nil {
+			return err
+		}
+		collection.Maps[ix].KeyTemplate = keyTmpl
+
+		valTmpl, err := template.New(rmap.HashKey + ":val").Funcs(funcMap).Parse(rmap.Value)
+		if err != nil {
+			return err
+		}
+		collection.Maps[ix].ValueTemplate = valTmpl
+	}
+	return nil
+}
+
 // ApplyTemplate takes a template string and a map of values to use
 // for evaluating the template.  Returns the evaluated template as
 // a string or an error.

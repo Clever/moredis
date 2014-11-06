@@ -63,15 +63,20 @@ func (m *MockIter) Close() error {
 
 func TestProcessQuery(t *testing.T) {
 	iter := NewMockIter([]bson.M{{"test": "1", "val": "expected"}, {"test": "2", "val": "expected"}})
-	maps := []MapConfig{
-		{
-			Key:     "{{.test}}",
-			Value:   "{{.val}}",
-			HashKey: "moredis:maps:1",
+
+	collection := CollectionConfig{
+		Maps: []MapConfig{
+			{
+				Key:     "{{.test}}",
+				Value:   "{{.val}}",
+				HashKey: "moredis:maps:1",
+			},
 		},
 	}
 	writer := NewMockRedisWriter()
-	err := ProcessQuery(writer, iter, maps)
+	err := ParseTemplates(&collection)
+	assert.Nil(t, err)
+	err = ProcessQuery(writer, iter, collection.Maps)
 	assert.Nil(t, err)
 	assert.Equal(t, []string{"HSET moredis:maps:1 1 expected", "HSET moredis:maps:1 2 expected"}, writer.Commands)
 }

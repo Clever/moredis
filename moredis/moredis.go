@@ -1,6 +1,7 @@
 package moredis
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 
@@ -60,6 +61,11 @@ func BuildCache(cacheConfig CacheConfig, params Params, redisURL string, mongoUR
 			return err
 		}
 
+		if err := ParseTemplates(&collection); err != nil {
+			logger.Error("Error parsing templates", err)
+			return err
+		}
+
 		logger.Info("Processing query for collection", logger.M{"query": query, "collection": collection.Collection})
 		iter := mongoDb.C(collection.Collection).Find(query).Iter()
 		if err := ProcessQuery(redisWriter, iter, collection.Maps); err != nil {
@@ -87,20 +93,27 @@ func BuildCache(cacheConfig CacheConfig, params Params, redisURL string, mongoUR
 func ProcessQuery(writer RedisWriter, iter MongoIter, maps []MapConfig) error {
 	processed := 0
 	var result bson.M
+	var b bytes.Buffer
 	for iter.Next(&result) {
 		for _, rmap := range maps {
-			key, err := ApplyTemplate(rmap.Key, result)
-			if err != nil {
+			if err := rmap.KeyTemplate.Execute(&b, result); err != nil {
+				logger.Error("Could not execute key template", err)
 				return err
 			}
+			key := b.String()
+			b.Reset()
+
 			if key == "" || key == "<no value>" {
 				continue
 			}
 
-			val, err := ApplyTemplate(rmap.Value, result)
-			if err != nil {
+			if err := rmap.ValueTemplate.Execute(&b, result); err != nil {
+				logger.Error("Could not execute value template", err)
 				return err
 			}
+			val := b.String()
+			b.Reset()
+
 			writer.Send("HSET", rmap.HashKey, key, val)
 		}
 		processed++

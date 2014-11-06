@@ -3,6 +3,7 @@ package moredis
 import (
 	"errors"
 	"io/ioutil"
+	"text/template"
 
 	"gopkg.in/v2/yaml"
 )
@@ -27,10 +28,12 @@ type CollectionConfig struct {
 
 // MapConfig is the config for a specific map.
 type MapConfig struct {
-	Name    string `yaml:"name"`
-	Key     string `yaml:"key"`
-	Value   string `yaml:"val"`
-	HashKey string
+	Name          string `yaml:"name"`
+	Key           string `yaml:"key"`
+	Value         string `yaml:"val"`
+	HashKey       string
+	KeyTemplate   *template.Template
+	ValueTemplate *template.Template
 }
 
 // LoadConfig takes a path to a config yaml file and loads it into the appropriate structs.
