@@ -114,14 +114,14 @@ func ApplyTemplate(templateString string, payload bson.M) (string, error) {
 	return b.String(), nil
 }
 
-// ParseQuery takes a query string template and a map of values for
-// substitution and returns a map that can be used for queries.
-//
-// The query string must evaluate to a valid JSON object.  This means
+// ParseTemplatedJSON takes a template string for a json object and
+// a map of values for substitution and returns a map that can be used in
+// mgo queries.
+// The template string must evaluate to a valid JSON object.  This means
 // that all keys must be strings.  For mongo operators, you should
 // encase them in quotes, for example "$or".  For ObjectIds, you should
 // use the hex string in place of the ObjectId.
-func ParseQuery(query string, params Params) (map[string]interface{}, error) {
+func ParseTemplatedJSON(query string, params Params) (map[string]interface{}, error) {
 	parsed, err := ApplyTemplate(query, params.Bson())
 	if err != nil {
 		return map[string]interface{}{}, err

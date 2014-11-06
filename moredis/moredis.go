@@ -50,10 +50,23 @@ func BuildCache(cacheConfig CacheConfig, params Params, redisURL string, mongoUR
 	redisWriter := NewRedisWriter(redisConn)
 
 	for _, collection := range cacheConfig.Collections {
-		query, err := ParseQuery(collection.Query, params)
+		query, err := ParseTemplatedJSON(collection.Query, params)
 		if err != nil {
 			logger.Error("Failed to parse query", err)
 			return err
+		}
+
+		var iter MongoIter
+		var projection map[string]interface{}
+		if collection.Projection != "" {
+			var err error
+			projection, err = ParseTemplatedJSON(collection.Projection, params)
+			if err != nil {
+				logger.Error("Error applying projection template", err)
+			}
+			iter = mongoDb.C(collection.Collection).Find(query).Select(projection).Iter()
+		} else {
+			iter = mongoDb.C(collection.Collection).Find(query).Iter()
 		}
 
 		if err := SetRedisHashKeys(redisConn, &collection); err != nil {
@@ -66,8 +79,11 @@ func BuildCache(cacheConfig CacheConfig, params Params, redisURL string, mongoUR
 			return err
 		}
 
-		logger.Info("Processing query for collection", logger.M{"query": query, "collection": collection.Collection})
-		iter := mongoDb.C(collection.Collection).Find(query).Iter()
+		logger.Info("Processing query for collection", logger.M{
+			"query":      query,
+			"collection": collection.Collection,
+			"projection": projection,
+		})
 		if err := ProcessQuery(redisWriter, iter, collection.Maps); err != nil {
 			logger.Error("Error processing query", err)
 			return err

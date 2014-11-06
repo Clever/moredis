@@ -148,7 +148,7 @@ func TestObjectIds(t *testing.T) {
 	assert.Equal(t, expected, in)
 }
 
-type parseQueryTestSpec struct {
+type parseTemplatedJSONTestSpec struct {
 	name          string
 	queryString   string
 	params        Params
@@ -156,7 +156,7 @@ type parseQueryTestSpec struct {
 	expectedError bool
 }
 
-var parseQueryTests = []parseQueryTestSpec{
+var parseTemplatedJSONTests = []parseTemplatedJSONTestSpec{
 	{
 		name:        "simple query with ObjectId substitution",
 		queryString: `{"_id": "{{.id}}"}`,
@@ -183,9 +183,9 @@ var parseQueryTests = []parseQueryTestSpec{
 	},
 }
 
-func TestParseQuery(t *testing.T) {
-	for _, testCase := range parseQueryTests {
-		actual, err := ParseQuery(testCase.queryString,
+func TestParseTemplatedJSON(t *testing.T) {
+	for _, testCase := range parseTemplatedJSONTests {
+		actual, err := ParseTemplatedJSON(testCase.queryString,
 			testCase.params)
 		if !testCase.expectedError {
 			assert.Nil(t, err)

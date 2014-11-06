@@ -23,6 +23,7 @@ type CacheConfig struct {
 type CollectionConfig struct {
 	Collection string      `yaml:"collection"`
 	Query      string      `yaml:"query"`
+	Projection string      `yaml:"projection"`
 	Maps       []MapConfig `yaml:"maps"`
 }
 

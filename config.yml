@@ -19,6 +19,12 @@ caches:
         # treated like an ObjectId.
         query: '{}'
 
+        # projection will be used to limit the fields returned by the MongoDB query.  This
+        # can save substantially on network load if the objects you are querying have many
+        # more fields than you need to build your map.  Projections are parsed the same as
+        # queries above, and are optional (although recommended).
+        projection: '{"_id": 1, "field": 1}'
+
         # maps that will be made from the documents returned by the above query.
         # For example, the below config will look at every document in the example-collection collection
         # and map the value of the 'field' field to the value of the '_id' field.
