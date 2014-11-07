@@ -7,6 +7,7 @@ import (
 
 	"github.com/Clever/moredis/logger"
 	"github.com/garyburd/redigo/redis"
+	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -48,8 +49,15 @@ func BuildCache(cacheConfig Config, params Params, redisURL string, mongoURL str
 	}
 	defer mongoDb.Session.Close()
 	defer redisConn.Close()
-	redisWriter := NewRedisWriter(redisConn)
 
+	if err := processCollections(cacheConfig, params, mongoDb, redisConn); err != nil {
+		return err
+	}
+	return nil
+}
+
+func processCollections(cacheConfig Config, params Params, mongoDb *mgo.Database, redisConn redis.Conn) error {
+	redisWriter := NewRedisWriter(redisConn)
 	for _, collection := range cacheConfig.Collections {
 		query, err := ParseTemplatedJSON(collection.Query, params)
 		if err != nil {

@@ -54,6 +54,8 @@ var toSetTests = []toSetTestSpec{
 	{bson.M{"key1": true, "key2": 5}, ""},
 	{bson.M{"key1": "true", "key2": "t"}, "[\"key1\",\"key2\"]"},
 	{nil, ""},
+	{bson.M{"key1": false, "key2": true}, ""},
+	{bson.M{"key1": "true", "key2": "false"}, ""},
 }
 
 func TestToSet(t *testing.T) {
