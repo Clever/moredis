@@ -139,6 +139,7 @@ func ProcessQuery(writer RedisWriter, iter MongoIter, maps []MapConfig) error {
 		logger.Error("Iterator error", err)
 		return err
 	}
+	writer.Flush()
 	logger.Info("Processed all documents for query", logger.M{"processed": processed})
 	return nil
 }
