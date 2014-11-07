@@ -131,7 +131,10 @@ func ProcessQuery(writer RedisWriter, iter MongoIter, maps []MapConfig) error {
 			val := b.String()
 			b.Reset()
 
-			writer.Send("HSET", rmap.HashKey, key, val)
+			if err := writer.Send("HSET", rmap.HashKey, key, val); err != nil {
+				logger.Error("Could not send HSET", err)
+				return err
+			}
 		}
 		processed++
 	}
@@ -139,7 +142,10 @@ func ProcessQuery(writer RedisWriter, iter MongoIter, maps []MapConfig) error {
 		logger.Error("Iterator error", err)
 		return err
 	}
-	writer.Flush()
+	if err := writer.Flush(); err != nil {
+		logger.Error("Error flushing", err)
+		return err
+	}
 	logger.Info("Processed all documents for query", logger.M{"processed": processed})
 	return nil
 }

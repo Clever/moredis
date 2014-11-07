@@ -64,7 +64,7 @@ func (r *redisWriter) Send(cmd string, args ...interface{}) error {
 	}
 	r.currentCount++
 	if r.currentCount >= r.flushInterval {
-		if err := r.conn.Flush(); err != nil {
+		if err := r.Flush(); err != nil {
 			return err
 		}
 		r.currentCount = 0
