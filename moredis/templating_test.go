@@ -50,9 +50,9 @@ type toSetTestSpec struct {
 }
 
 var toSetTests = []toSetTestSpec{
-	{bson.M{"key1": true, "key2": true}, "[key1,key2]"},
+	{bson.M{"key1": true, "key2": true}, "[\"key1\",\"key2\"]"},
 	{bson.M{"key1": true, "key2": 5}, ""},
-	{bson.M{"key1": "true", "key2": "t"}, "[key1,key2]"},
+	{bson.M{"key1": "true", "key2": "t"}, "[\"key1\",\"key2\"]"},
 	{nil, ""},
 }
 

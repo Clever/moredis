@@ -74,7 +74,11 @@ func toSet(toConvert interface{}) string {
 		// sort here so that the order is determinate, otherwise testing is more
 		// difficult
 		sort.Strings(set)
-		return "[" + strings.Join(set, ",") + "]"
+		jsonSet, err := json.Marshal(set)
+		if err != nil {
+			return ""
+		}
+		return string(jsonSet)
 	}
 
 	return ""
