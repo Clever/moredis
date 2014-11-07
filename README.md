@@ -56,7 +56,7 @@ Lets say you have a MongoDB collection called 'users', and in this collection yo
 {
   _id: ObjectId("507f1f77bcf86cd799431111"),
   username: "CoolDude",
-  email: "CoolDude25@hotmail.com",
+  email: "CoolDude25@example.com",
   group: ObjectId("507f1f77bcf86cd799432222")
 }
 ```
@@ -64,16 +64,14 @@ Lets say you have a MongoDB collection called 'users', and in this collection yo
 Now imagine you were writing a service which required very fast lookups of ids by email in a case-insensitive way.  You could accomplish this with the following `moredis` configuration:
 
 ```yaml
-caches:
-  -
-    name: 'demo-cache'
-    collections:
-      - collection: 'users'
-        query: '{}'
-        maps:
-          - name: 'users:email'
-            key: '{{toLower .email}}'
-            val: '{{toString ._id}}'
+name: 'demo-cache'
+collections:
+  - collection: 'users'
+    query: '{}'
+    maps:
+      - name: 'users:email'
+        key: '{{toLower .email}}'
+        val: '{{toString ._id}}'
 ```
 
 Then run `moredis` with:
@@ -82,13 +80,13 @@ Then run `moredis` with:
 $ ./moredis
 ```
 
-After this runs, you will have a key in redis called 'users:email'.  This value for this key will be the key for a hash that has all of your email-to-id mappings.  Doing a lookup of the user id for email 'cooldude25@hotmail.com' in redis would look like the following in redis-cli:
+After this runs, you will have a key in redis called 'users:email'.  This value for this key will be the key for a hash that has all of your email-to-id mappings.  Doing a lookup of the user id for email 'cooldude25@example.com' in redis would look like the following in redis-cli:
 
 ```bash
 > GET users:email
 "moredis:map:1"
 
-> HGET moredis:map:1 cooldude25@hotmail.com
+> HGET moredis:map:1 cooldude25@example.com
 "507f1f77bcf86cd799431111"
 ```
 
@@ -99,16 +97,14 @@ That's great if you want to create the mapping for every document in a collectio
 With `moredis` you can do this by specifying a query in the above config like so:
 
 ```yaml
-caches:
-  -
-    name: 'demo-cache'
-    collections:
-      - collection: 'users'
-        query: '{"group": "507f1f77bcf86cd799432222"}'
-        maps:
-          - name: 'users:email'
-            key: '{{toLower .email}}'
-            val: '{{toString ._id}}'
+name: 'demo-cache'
+collections:
+  - collection: 'users'
+    query: '{"group": "507f1f77bcf86cd799432222"}'
+    maps:
+      - name: 'users:email'
+        key: '{{toLower .email}}'
+        val: '{{toString ._id}}'
 ```
 
 With this config, we will now only do the mapping for documents in the user collection with the given group id.
@@ -120,16 +116,14 @@ To take this example one step further, not only do you only want to create the c
 To accomplish passing the group id in at runtime, we could modify our config to now look like:
 
 ```yaml
-caches:
-  -
-    name: demo-cache
-    collections:
-      - collection: users
-        query: '{"group": "{{.group}}"}'
-        maps:
-          - name: 'users:email:{{.group}}'
-            key: '{{toLower .email}}'
-            val: '{{toString ._id}}'
+name: demo-cache
+collections:
+  - collection: users
+    query: '{"group": "{{.group}}"}'
+    maps:
+      - name: 'users:email:{{.group}}'
+        key: '{{toLower .email}}'
+        val: '{{toString ._id}}'
 ```
 
 Now you can see that both our query and our map name are parameterized by this "group" parameter.  You can pass that parameter in on the commandline like so:
