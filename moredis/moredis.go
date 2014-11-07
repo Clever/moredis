@@ -37,7 +37,7 @@ func (p *Params) Bson() bson.M {
 }
 
 // BuildCache builds a redis cache according to the passed in config.
-func BuildCache(cacheConfig CacheConfig, params Params, redisURL string, mongoURL string) error {
+func BuildCache(cacheConfig Config, params Params, redisURL string, mongoURL string) error {
 	logger.Info("Populating cache.", logger.M{"cache": cacheConfig.Name})
 
 	// set up mongo/redis connections

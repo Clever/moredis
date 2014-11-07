@@ -18,7 +18,6 @@ const (
 var (
 	redisURL       string
 	mongoURL       string
-	cache          string
 	params         moredis.Params
 	configFilePath string
 )
@@ -32,8 +31,6 @@ func init() {
 	flag.StringVar(&redisURL, "r", "", "")
 	flag.StringVar(&mongoURL, "mongo_url", "", "")
 	flag.StringVar(&mongoURL, "m", "", "")
-	flag.StringVar(&cache, "cache", "", "")
-	flag.StringVar(&cache, "c", "", "")
 	flag.Var(&params, "params", "")
 	flag.Var(&params, "p", "")
 	flag.StringVar(&configFilePath, "conf_file", defaultFilePath, "")
@@ -43,13 +40,6 @@ func init() {
 func main() {
 	flag.Usage = PrintUsage
 	flag.Parse()
-
-	// cache is the only required parameter
-	if cache == "" {
-		fmt.Fprintln(os.Stderr, "Missing 'cache' argument")
-		flag.Usage()
-		os.Exit(1)
-	}
 
 	// grab connection from env or default if not in flags
 	mongoURL = FlagEnvOrDefault(mongoURL, "MONGO_URL", DefaultMongoURL)
@@ -61,13 +51,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	cacheConfig, err := conf.GetCache(cache)
-	if err != nil {
-		logger.Error("Cache not found in config.", err)
-		os.Exit(1)
-	}
-
-	if err := moredis.BuildCache(cacheConfig, params, redisURL, mongoURL); err != nil {
+	if err := moredis.BuildCache(conf, params, redisURL, mongoURL); err != nil {
 		fmt.Fprint(os.Stderr, err)
 		os.Exit(1)
 	}
@@ -76,7 +60,6 @@ func main() {
 // PrintUsage is used to replace flag.Usage, which is pretty terrible.
 func PrintUsage() {
 	var usage = `Usage of ./moredis:
-  -c, -cache        Which cache to populate (REQUIRED)
   -m, -mongo_url    MongoDB URL, can also be set via the MONGO_URL environment variable
   -p, -params       JSON object with params used for substitution into queries and collection names in config.yml
   -r, -redis_url    Redis URL, can also be set via the REDIS_URL environment variable

@@ -21,7 +21,6 @@ For more specific examples, see [Examples](#examples)
 ## Usage
 ```bash
 Usage of ./moredis:
-  -c, -cache        Which cache to populate (REQUIRED)
   -m, -mongo_url    MongoDB URL, can also be set via the MONGO_URL environment variable
   -p, -params       JSON object with params used for substitution into queries and collection names in config.yml
   -r, -redis_url    Redis URL, can also be set via the REDIS_URL environment variable
@@ -80,7 +79,7 @@ caches:
 Then run `moredis` with:
 
 ```bash
-$ ./moredis -c demo-cache
+$ ./moredis
 ```
 
 After this runs, you will have a key in redis called 'users:email'.  This value for this key will be the key for a hash that has all of your email-to-id mappings.  Doing a lookup of the user id for email 'cooldude25@hotmail.com' in redis would look like the following in redis-cli:
@@ -136,7 +135,7 @@ caches:
 Now you can see that both our query and our map name are parameterized by this "group" parameter.  You can pass that parameter in on the commandline like so:
 
 ```bash
-$ ./moredis -c demo-cache -p '{"group": "507f1f77bcf86cd799432222"}'
+$ ./moredis -p '{"group": "507f1f77bcf86cd799432222"}'
 ```
 
 The result of this run will be the same as from the previous example, except the map will now contain the group id in the key name (so that caches for different groups don't overwrite each other).

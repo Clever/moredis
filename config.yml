@@ -1,49 +1,43 @@
-# List caches to create
-caches:
+name: "example"
+
+# Here you can define which MongoDB collections you want to query from.  You can build
+# multiple maps from each collection, and each top level cache can be made from multiple collections.
+collections:
   -
-    #  a name for your cache, this name will be the one you enter as
-    #  the cache command line parameter.
-    name: "example"
+    # collection to query
+    collection: "example-collection"
 
-    # Here you can define which MongoDB collections you want to query from.  You can build
-    # multiple maps from each collection, and each top level cache can be made from multiple collections.
-    collections:
+    # query we will execute on the collection, represented as a JSON object.
+    # Queries can be parameterized, with parameters passed in on the command line.
+    # Substitution of params is done using go's text/template package.  Additionally,
+    # any string which can be identified as a MongoDB ObjectId hex identifier will be
+    # treated like an ObjectId.
+    query: '{}'
+
+    # projection will be used to limit the fields returned by the MongoDB query.  This
+    # can save substantially on network load if the objects you are querying have many
+    # more fields than you need to build your map.  Projections are parsed the same as
+    # queries above, and are optional (although recommended).
+    projection: '{"_id": 1, "field": 1}'
+
+    # maps that will be made from the documents returned by the above query.
+    # For example, the below config will look at every document in the example-collection collection
+    # and map the value of the 'field' field to the value of the '_id' field.
+    maps:
       -
-        # collection to query
-        collection: "example-collection"
+        # name to store the mapping as in redis.
+        # Name can be parameterized the same as query, using parameters passed in on the command
+        # line.
+        name: "example:mapping"
 
-        # query we will execute on the collection, represented as a JSON object.
-        # Queries can be parameterized, with parameters passed in on the command line.
-        # Substitution of params is done using go's text/template package.  Additionally,
-        # any string which can be identified as a MongoDB ObjectId hex identifier will be
-        # treated like an ObjectId.
-        query: '{}'
+        # key to use in your map on redis.  keys can be parameterized using fields
+        # from the documents returned by your query.  Note that ObjectIds will need to be 
+        # converted to strings for storage in redis, you can do this using the toString
+        # template function.
+        key: "{{.field}}"
 
-        # projection will be used to limit the fields returned by the MongoDB query.  This
-        # can save substantially on network load if the objects you are querying have many
-        # more fields than you need to build your map.  Projections are parsed the same as
-        # queries above, and are optional (although recommended).
-        projection: '{"_id": 1, "field": 1}'
-
-        # maps that will be made from the documents returned by the above query.
-        # For example, the below config will look at every document in the example-collection collection
-        # and map the value of the 'field' field to the value of the '_id' field.
-        maps:
-          -
-            # name to store the mapping as in redis.
-            # Name can be parameterized the same as query, using parameters passed in on the command
-            # line.
-            name: "example:mapping"
-
-            # key to use in your map on redis.  keys can be parameterized using fields
-            # from the documents returned by your query.  Note that ObjectIds will need to be 
-            # converted to strings for storage in redis, you can do this using the toString
-            # template function.
-            key: "{{.field}}"
-
-            # val to be stored for the key specified above.  
-            # Values can be parameterized using fields from the documents returned by your query.
-            # Note that ObjectIds will need to be converted to strings for storage in redis, you
-            # can do this using the toString template function.
-            val: "{{toString ._id}}"
-
+        # val to be stored for the key specified above.
+        # Values can be parameterized using fields from the documents returned by your query.
+        # Note that ObjectIds will need to be converted to strings for storage in redis, you
+        # can do this using the toString template function.
+        val: "{{toString ._id}}"

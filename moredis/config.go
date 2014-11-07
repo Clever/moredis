@@ -1,20 +1,14 @@
 package moredis
 
 import (
-	"errors"
 	"io/ioutil"
 	"text/template"
 
 	"gopkg.in/v2/yaml"
 )
 
-// Config holds the config loaded from config.yml
+// Config is the config for the cache
 type Config struct {
-	Caches []CacheConfig `yaml:"caches"`
-}
-
-// CacheConfig is the config for a specific cache
-type CacheConfig struct {
 	Name        string             `yaml:"name"`
 	Collections []CollectionConfig `yaml:"collections"`
 }
@@ -50,14 +44,4 @@ func LoadConfig(path string) (Config, error) {
 	}
 
 	return conf, nil
-}
-
-// GetCache returns the config for a specific cache inside the moredis config.
-func (c Config) GetCache(cacheName string) (CacheConfig, error) {
-	for _, cache := range c.Caches {
-		if cache.Name == cacheName {
-			return cache, nil
-		}
-	}
-	return CacheConfig{}, errors.New("cache not found in config")
 }
