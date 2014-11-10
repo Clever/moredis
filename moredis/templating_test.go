@@ -65,6 +65,24 @@ func TestToSet(t *testing.T) {
 	}
 }
 
+type toJSONTestSpec struct {
+	input    interface{}
+	expected interface{}
+}
+
+var toJSONTests = []toJSONTestSpec{
+	{bson.M{"key1": "val1", "key2": "val2"}, "{\"key1\":\"val1\",\"key2\":\"val2\"}"},
+	{nil, nil},
+	{"notanobject", "notanobject"},
+}
+
+func TestToJSON(t *testing.T) {
+	for _, testCase := range toJSONTests {
+		actual := toJSON(testCase.input)
+		assert.Equal(t, testCase.expected, actual, "toJson(%v) failed", testCase.input)
+	}
+}
+
 type applyTemplateTestSpec struct {
 	name           string
 	templateString string
