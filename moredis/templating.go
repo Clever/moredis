@@ -18,6 +18,7 @@ var funcMap = template.FuncMap{
 	"toLower":  safeToLower,
 	"toString": toString,
 	"toSet":    toSet,
+	"toJson":   toJSON,
 }
 
 // toString is a function that is exported to templates to allow
@@ -82,6 +83,23 @@ func toSet(toConvert interface{}) string {
 	}
 
 	return ""
+}
+
+// toJSON is a function that is exported to templates as 'toJson'
+// to allow converting mongo objects to json.  If the object passed in
+// is not a mongo object, it is unaffected.
+func toJSON(toConvert interface{}) interface{} {
+	switch toConvert := toConvert.(type) {
+	case bson.M:
+		marshalled, err := json.Marshal(toConvert)
+		if err != nil {
+			// can't marshal, just return it
+			return toConvert
+		}
+		return string(marshalled)
+	default:
+		return toConvert
+	}
 }
 
 // ParseTemplates takes a collection config and parses the templates
