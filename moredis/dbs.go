@@ -14,6 +14,10 @@ func SetupDbs(mongoURL, redisURL string) (*mgo.Database, redis.Conn, error) {
 	if err != nil {
 		return nil, nil, err
 	}
+	// use 'monotonic' consistency mode.  Since we only do reads, this doesn't have an actual effect
+	// other than letting us read from secondaries if the connection string has the ?connect=direct param.
+	mongoSession.SetMode(mgo.Monotonic, false)
+
 	// empty db string uses the db from the connection url
 	mongoDB := mongoSession.DB("")
 	logger.Info("Connected to mongo", logger.M{"mongo_url": mongoURL})
