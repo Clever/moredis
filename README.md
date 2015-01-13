@@ -32,7 +32,7 @@ Usage of ./moredis:
 
 `moredis` cache configuration is done using yaml.  You can specify a config file to use, or `moredis` will default to config.yml in the same folder as the `moredis` executable.  This repo contains a sample config.yml which you can to modify to suit your needs.  The [sample](./config.yml) has comments to describe the various fields and their purposes.
 
-You also need to provide `moredis` with connection parameters for both your MongoDB instance and Redis instance.  These settings can be set with either command line flags or environment variables (with the command line flags taking precedence).  Mongo URL should be a MongoDB connection string (exact form expected can be found [in the mgo docs](http://godoc.org/gopkg.in/mgo.v2#Dial)).  Note that if you want to connect to a MongoDB secondary, you will need to specify `?connect=direct` in your mongo url.  Redis URL should be in the form "host:port".
+You also need to provide `moredis` with connection parameters for both your MongoDB instance and Redis instance.  These settings can be set with either command line flags or environment variables (with the command line flags taking precedence).  Mongo URL should be a MongoDB connection string (exact form expected can be found [in the mgo docs](http://godoc.org/gopkg.in/mgo.v2#Dial)).  Note that if you want to connect to a MongoDB secondary, you will need to specify `?connect=direct` in your mongo url.  Redis URL should be in the form "host:port".  There is experimental support for Sentinel which will attempt to resolve the master on connect, but will not attempt any failover.  Sentinel will be used if the Redis URL is of the form "sentinel://host:port/set".
 
 For each, the settings locations are:
 

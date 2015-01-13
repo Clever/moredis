@@ -1,6 +1,10 @@
 package moredis
 
 import (
+	"fmt"
+	"regexp"
+	"strings"
+
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
 
@@ -22,12 +26,45 @@ func SetupDbs(mongoURL, redisURL string) (*mgo.Database, redis.Conn, error) {
 	mongoDB := mongoSession.DB("")
 	logger.Info("Connected to mongo", logger.M{"mongo_url": mongoURL})
 
+	redisURL, err = resolveRedis(redisURL)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	redisConn, err := redis.Dial("tcp", redisURL)
 	if err != nil {
 		return nil, nil, err
 	}
 	logger.Info("Connected to redis", logger.M{"redis_url": redisURL})
 	return mongoDB, redisConn, nil
+}
+
+// resolveRedis takes in a redis address and checks for a sentinel:// prefix to resolve. If one is present, it uses
+// sentinel to resolve the master and returns that. Otherwise, it returns the original address.
+func resolveRedis(address string) (string, error) {
+	if !strings.HasPrefix(address, "sentinel://") {
+		return address, nil
+	}
+
+	match := regexp.MustCompile(`sentinel://([^/]+)/(.*)`)
+	addressParts := match.FindAllStringSubmatch(address, -1)
+
+	if len(addressParts) < 1 || len(addressParts[0]) < 3 {
+		return "", fmt.Errorf("Failed to parse sentinel address %v", address)
+	}
+	for _, url := range strings.Split(addressParts[0][1], ",") {
+		redisConn, err := redis.Dial("tcp", url)
+		if err != nil {
+			continue
+		}
+		defer redisConn.Close()
+		master, err := redis.Strings(redisConn.Do("SENTINEL", "get-master-addr-by-name", addressParts[0][2]))
+		if err == nil {
+			return master[0] + ":" + master[1], nil
+		}
+	}
+
+	return "", fmt.Errorf("Failed to find master for sentinel address %v", address)
 }
 
 // MongoIter defines an interface that must be met by types we use as mongo iterators.
