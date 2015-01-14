@@ -148,6 +148,7 @@ func ProcessQuery(writer RedisWriter, iter MongoIter, maps []MapConfig) error {
 	}
 	if err := iter.Err(); err != nil {
 		logger.Error("Iteration error", err)
+		return err
 	}
 	if err := iter.Close(); err != nil {
 		logger.Error("Iter.Close() error", err)
