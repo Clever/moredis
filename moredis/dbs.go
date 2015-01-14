@@ -5,10 +5,9 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/Clever/moredis/logger"
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/mgo.v2"
-
-	"github.com/Clever/moredis/logger"
 )
 
 // SetupDbs takes connection parameters for redis and mongo and returns active sessions.
@@ -71,6 +70,7 @@ func resolveRedis(address string) (string, error) {
 // The main purpose of breaking this out into an interface is for ease of mocking in tests.
 type MongoIter interface {
 	Next(result interface{}) bool
+	Err() error
 	Close() error
 }
 

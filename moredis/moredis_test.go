@@ -37,6 +37,10 @@ func (m *MockIter) Close() error {
 	return nil
 }
 
+func (m *MockIter) Err() error {
+	return nil
+}
+
 func TestProcessQuery(t *testing.T) {
 	iter := NewMockIter([]bson.M{{"test": "1", "val": "expected"}})
 

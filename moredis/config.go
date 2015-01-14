@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"text/template"
 
-	"gopkg.in/v2/yaml"
+	"gopkg.in/yaml.v2"
 )
 
 // Config is the config for the cache
