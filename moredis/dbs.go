@@ -110,6 +110,7 @@ func (r *redisWriter) Send(cmd string, args ...interface{}) error {
 			return err
 		}
 		r.currentCount = 0
+		// Do a ping and wait for the reply to ensure that there is no data waiting to be received.
 		if _, err := r.conn.Do("PING"); err != nil {
 			return err
 		}
