@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/Clever/moredis/logger"
 	"github.com/garyburd/redigo/redis"
@@ -30,7 +31,7 @@ func SetupDbs(mongoURL, redisURL string) (*mgo.Database, redis.Conn, error) {
 		return nil, nil, err
 	}
 
-	redisConn, err := redis.Dial("tcp", redisURL)
+	redisConn, err := redis.DialTimeout("tcp", redisURL, 15*time.Second, 10*time.Second, 10*time.Second)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -109,6 +110,10 @@ func (r *redisWriter) Send(cmd string, args ...interface{}) error {
 			return err
 		}
 		r.currentCount = 0
+		// Do a ping and wait for the reply to ensure that there is no data waiting to be received.
+		if _, err := r.conn.Do("PING"); err != nil {
+			return err
+		}
 	}
 	return nil
 
