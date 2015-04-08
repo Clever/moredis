@@ -64,8 +64,24 @@ func processCollections(cacheConfig Config, params Params, mongoDb *mgo.Database
 			logger.Error("Failed to parse query", err)
 			return err
 		}
+		partialQuery := mongoDb.C(collection.Collection).Find(query)
 
-		var iter MongoIter
+		var sort map[string]interface{}
+		if collection.Sort != "" {
+			sort, err = ParseTemplatedJSON(collection.Sort, params)
+			if err != nil {
+				logger.Error("Error applying sort template", err)
+			}
+			for k := range sort {
+				if sort[k].(int) == -1 {
+					partialQuery = partialQuery.Sort(k)
+					break // assume only one specified
+				} else {
+					partialQuery = partialQuery.Sort("-" + k)
+				}
+			}
+		}
+
 		var projection map[string]interface{}
 		if collection.Projection != "" {
 			var err error
@@ -73,10 +89,10 @@ func processCollections(cacheConfig Config, params Params, mongoDb *mgo.Database
 			if err != nil {
 				logger.Error("Error applying projection template", err)
 			}
-			iter = mongoDb.C(collection.Collection).Find(query).Select(projection).Iter()
-		} else {
-			iter = mongoDb.C(collection.Collection).Find(query).Iter()
+			partialQuery = partialQuery.Select(projection)
 		}
+
+		iter := partialQuery.Iter()
 
 		if err := SetRedisHashKeys(redisConn, &collection); err != nil {
 			logger.Error("Error setting up redis map keys", err)
@@ -92,6 +108,7 @@ func processCollections(cacheConfig Config, params Params, mongoDb *mgo.Database
 			"query":      query,
 			"collection": collection.Collection,
 			"projection": projection,
+			"sort":       sort,
 		})
 		if err := ProcessQuery(redisWriter, iter, collection.Maps); err != nil {
 			logger.Error("Error processing query", err)
