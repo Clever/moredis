@@ -73,7 +73,8 @@ func processCollections(cacheConfig Config, params Params, mongoDb *mgo.Database
 				logger.Error("Error applying sort template", err)
 			}
 			for k := range sort {
-				if sort[k].(int) == -1 {
+				fmt.Printf("here is your value", sort[k])
+				if int(sort[k].(float64)) == -1 {
 					partialQuery = partialQuery.Sort(k)
 					break // assume only one specified
 				} else {
