@@ -7,8 +7,8 @@ PKGS = $(PKG) $(SUBPKGS)
 VERSION := $(shell cat VERSION)
 EXECUTABLE := moredis
 BUILDS := \
-	build/$(EXECUTABLE)-v$(VERSION)-darwin-amd64 \
 	build/$(EXECUTABLE)-v$(VERSION)-linux-amd64 \
+	build/$(EXECUTABLE)-v$(VERSION)-darwin-amd64 \
 	build/$(EXECUTABLE)-v$(VERSION)-windows-amd64
 COMPRESSED_BUILDS := $(BUILDS:%=%.tar.gz)
 RELEASE_ARTIFACTS := $(COMPRESSED_BUILDS:build/%=release/%)
@@ -34,13 +34,18 @@ else
 	@go test $@ -test.v
 endif
 
-build/$(EXECUTABLE)-v$(VERSION)-darwin-amd64:
+$(GOPATH)/bin/gox:
+	go get github.com/mitchellh/gox
+build/$(EXECUTABLE)-v$(VERSION)-darwin-amd64: $(GOPATH)/bin/gox
+	sudo PATH=$$PATH:`go env GOROOT`/bin $(GOPATH)/bin/gox -build-toolchain -os darwin -arch amd64
 	GOARCH=amd64 GOOS=darwin go build -o "$@/$(EXECUTABLE)" $(PKG)
 	cp config.yml "$@/"
-build/$(EXECUTABLE)-v$(VERSION)-linux-amd64:
+build/$(EXECUTABLE)-v$(VERSION)-linux-amd64: $(GOPATH)/bin/gox
+	sudo PATH=$$PATH:`go env GOROOT`/bin $(GOPATH)/bin/gox -build-toolchain -os linux -arch amd64
 	GOARCH=amd64 GOOS=linux go build -o "$@/$(EXECUTABLE)" $(PKG)
 	cp config.yml "$@/"
-build/$(EXECUTABLE)-v$(VERSION)-windows-amd64:
+build/$(EXECUTABLE)-v$(VERSION)-windows-amd64: $(GOPATH)/bin/gox
+	sudo PATH=$$PATH:`go env GOROOT`/bin $(GOPATH)/bin/gox -build-toolchain -os windows -arch amd64
 	GOARCH=amd64 GOOS=windows go build -o "$@/$(EXECUTABLE).exe" $(PKG)
 	cp config.yml "$@/"
 build: $(BUILDS)
