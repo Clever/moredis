@@ -18,6 +18,7 @@ type CollectionConfig struct {
 	Collection string      `yaml:"collection"`
 	Query      string      `yaml:"query"`
 	Projection string      `yaml:"projection"`
+	Sort       string      `yaml:"sort"`
 	Maps       []MapConfig `yaml:"maps"`
 }
 
