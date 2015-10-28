@@ -15,6 +15,13 @@ RELEASE_ARTIFACTS := $(COMPRESSED_BUILDS:build/%=release/%)
 
 .PHONY: test $(PKGS) clean run
 
+GOVERSION := $(shell go version | grep 1.5)
+ifeq "$(GOVERSION)" ""
+  $(error must be running Go version 1.5)
+endif
+
+export GO15VENDOREXPERIMENT = 1
+
 test: $(PKGS)
 
 $(GOPATH)/bin/golint:
@@ -34,18 +41,13 @@ else
 	@go test $@ -test.v
 endif
 
-$(GOPATH)/bin/gox:
-	go get github.com/mitchellh/gox
-build/$(EXECUTABLE)-v$(VERSION)-darwin-amd64: $(GOPATH)/bin/gox
-	sudo PATH=$$PATH:`go env GOROOT`/bin $(GOPATH)/bin/gox -build-toolchain -os darwin -arch amd64
+build/$(EXECUTABLE)-v$(VERSION)-darwin-amd64:
 	GOARCH=amd64 GOOS=darwin go build -o "$@/$(EXECUTABLE)" $(PKG)
 	cp config.yml "$@/"
-build/$(EXECUTABLE)-v$(VERSION)-linux-amd64: $(GOPATH)/bin/gox
-	sudo PATH=$$PATH:`go env GOROOT`/bin $(GOPATH)/bin/gox -build-toolchain -os linux -arch amd64
+build/$(EXECUTABLE)-v$(VERSION)-linux-amd64:
 	GOARCH=amd64 GOOS=linux go build -o "$@/$(EXECUTABLE)" $(PKG)
 	cp config.yml "$@/"
-build/$(EXECUTABLE)-v$(VERSION)-windows-amd64: $(GOPATH)/bin/gox
-	sudo PATH=$$PATH:`go env GOROOT`/bin $(GOPATH)/bin/gox -build-toolchain -os windows -arch amd64
+build/$(EXECUTABLE)-v$(VERSION)-windows-amd64:
 	GOARCH=amd64 GOOS=windows go build -o "$@/$(EXECUTABLE).exe" $(PKG)
 	cp config.yml "$@/"
 build: $(BUILDS)
