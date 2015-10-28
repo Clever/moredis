@@ -21,4 +21,5 @@ publish:
     when:
       branch: master
 script:
+- make install_deps
 - make test

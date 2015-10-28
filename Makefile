@@ -13,7 +13,7 @@ BUILDS := \
 COMPRESSED_BUILDS := $(BUILDS:%=%.tar.gz)
 RELEASE_ARTIFACTS := $(COMPRESSED_BUILDS:build/%=release/%)
 
-.PHONY: test $(PKGS) clean run
+.PHONY: test $(PKGS) clean run install_deps
 
 GOVERSION := $(shell go version | grep 1.5)
 ifeq "$(GOVERSION)" ""
@@ -27,8 +27,10 @@ test: $(PKGS)
 $(GOPATH)/bin/golint:
 	@go get github.com/golang/lint/golint
 
+$(GOPATH)/bin/glide:
+	@go get github.com/Masterminds/glide
+
 $(PKGS): $(GOPATH)/bin/golint
-	@go get -d -t $@
 	@gofmt -w=true $(GOPATH)/src/$@*/**.go
 	@echo "LINTING..."
 	@$(GOPATH)/bin/golint $(GOPATH)/src/$@*/**.go
@@ -63,3 +65,6 @@ clean:
 
 run:
 	@go run moredis.go
+
+install_deps: $(GOPATH)/bin/glide
+	@$(GOPATH)/bin/glide install
