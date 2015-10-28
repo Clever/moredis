@@ -1,0 +1,19 @@
+package: github.com/Clever/moredis/moredis
+import:
+  - package: gopkg.in/yaml.v2
+    ref:     53feefa2559fb8dfa8d81baad31be332c97d6c77
+  - package: github.com/garyburd/redigo
+    ref:     7ec56c98db25aa5eeed5e028188fda8fe6fb4bf3
+  - package: gopkg.in/mgo.v2
+    ref:     4d04138ffef2791c479c0c8bbffc30b34081b8d9
+  - package: gopkg.in/clever/kayvee-go.v2
+    ref:     6a107401d4b22eb61191b4aec5442d22b0ecc628
+  - package: gopkg.in/mgo.v2/bson
+  - package: github.com/rafaeljusto/redigomock
+    ref:     669d7226c12e44dee5bb6151c8683366b642b718
+  - package: github.com/getsentry/raven-go
+    ref:     d25a363f644decca10856d923980d10555f473e9
+  - package: github.com/stretchr/testify
+    ref:     f3960ab1f9664ecc4e27c78af27cc9063d745a43
+    subpackages:
+      - /assert
