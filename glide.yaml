@@ -9,6 +9,7 @@ import:
   - package: gopkg.in/clever/kayvee-go.v2
     ref:     6a107401d4b22eb61191b4aec5442d22b0ecc628
   - package: gopkg.in/mgo.v2/bson
+    ref:     4d04138ffef2791c479c0c8bbffc30b34081b8d9
   - package: github.com/rafaeljusto/redigomock
     ref:     669d7226c12e44dee5bb6151c8683366b642b718
   - package: github.com/getsentry/raven-go
