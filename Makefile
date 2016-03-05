@@ -1,3 +1,7 @@
+include golang.mk
+.DEFAULT_GOAL := test # override default goal set in library makefile
+
+.PHONY: test $(PKGS) clean run install_deps
 SHELL := /bin/bash
 PKG = github.com/Clever/moredis/cmd/moredis
 SUBPKGS := \
@@ -12,36 +16,14 @@ BUILDS := \
 	build/$(EXECUTABLE)-v$(VERSION)-windows-amd64
 COMPRESSED_BUILDS := $(BUILDS:%=%.tar.gz)
 RELEASE_ARTIFACTS := $(COMPRESSED_BUILDS:build/%=release/%)
-
-.PHONY: test $(PKGS) clean run install_deps
-
-GOVERSION := $(shell go version | grep 1.5)
-ifeq "$(GOVERSION)" ""
-  $(error must be running Go version 1.5)
-endif
-
-export GO15VENDOREXPERIMENT = 1
-
-test: $(PKGS)
-
-$(GOPATH)/bin/golint:
-	@go get github.com/golang/lint/golint
+$(eval $(call golang-version-check,1.5))
 
 $(GOPATH)/bin/glide:
 	@go get github.com/Masterminds/glide
 
-$(PKGS): $(GOPATH)/bin/golint
-	@gofmt -w=true $(GOPATH)/src/$@*/**.go
-	@echo "LINTING..."
-	@$(GOPATH)/bin/golint $(GOPATH)/src/$@*/**.go
-	@echo ""
-ifeq ($(COVERAGE),1)
-	@go test -cover -coverprofile=$(GOPATH)/src/$@/c.out $@ -test.v
-	@go tool cover -html=$(GOPATH)/src/$@/c.out
-else
-	@echo "TESTING..."
-	@go test $@ -test.v
-endif
+test: $(PKGS)
+$(PKGS): golang-test-all-deps
+	$(call golang-test-all,$@)
 
 build/$(EXECUTABLE)-v$(VERSION)-darwin-amd64:
 	GOARCH=amd64 GOOS=darwin go build -o "$@/$(EXECUTABLE)" $(PKG)
