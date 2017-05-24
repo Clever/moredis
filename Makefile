@@ -16,7 +16,7 @@ BUILDS := \
 	build/$(EXECUTABLE)-v$(VERSION)-windows-amd64
 COMPRESSED_BUILDS := $(BUILDS:%=%.tar.gz)
 RELEASE_ARTIFACTS := $(COMPRESSED_BUILDS:build/%=release/%)
-$(eval $(call golang-version-check,1.7))
+$(eval $(call golang-version-check,1.8))
 
 $(GOPATH)/bin/glide:
 	@go get github.com/Masterminds/glide
