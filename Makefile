@@ -16,10 +16,8 @@ BUILDS := \
 	build/$(EXECUTABLE)-v$(VERSION)-windows-amd64
 COMPRESSED_BUILDS := $(BUILDS:%=%.tar.gz)
 RELEASE_ARTIFACTS := $(COMPRESSED_BUILDS:build/%=release/%)
-$(eval $(call golang-version-check,1.8))
+$(eval $(call golang-version-check,1.9))
 
-$(GOPATH)/bin/glide:
-	@go get github.com/Masterminds/glide
 
 test: $(PKGS)
 $(PKGS): golang-test-all-deps
@@ -48,5 +46,7 @@ clean:
 run:
 	@go run moredis.go
 
-install_deps: $(GOPATH)/bin/glide
-	@$(GOPATH)/bin/glide install
+
+
+install_deps: golang-dep-vendor-deps
+	$(call golang-dep-vendor)
