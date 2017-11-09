@@ -16,10 +16,7 @@ type Params map[string]string
 
 // Set parses a Param object from a string into the method receiver.
 func (p *Params) Set(value string) error {
-	if err := json.Unmarshal([]byte(value), p); err != nil {
-		return err
-	}
-	return nil
+	return json.Unmarshal([]byte(value), p)
 }
 
 // String gives a string representation of a Params object
@@ -50,10 +47,7 @@ func BuildCache(cacheConfig Config, params Params, redisURL string, mongoURL str
 	defer mongoDb.Session.Close()
 	defer redisConn.Close()
 
-	if err := processCollections(cacheConfig, params, mongoDb, redisConn); err != nil {
-		return err
-	}
-	return nil
+	return processCollections(cacheConfig, params, mongoDb, redisConn)
 }
 
 func processCollections(cacheConfig Config, params Params, mongoDb *mgo.Database, redisConn redis.Conn) error {
