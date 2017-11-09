@@ -10,6 +10,7 @@ checkout:
 compile:
   override:
   - make install_deps
+  - make build
 test:
   override:
   - make test

@@ -46,7 +46,5 @@ clean:
 run:
 	@go run moredis.go
 
-
-
 install_deps: golang-dep-vendor-deps
 	$(call golang-dep-vendor)
