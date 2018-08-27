@@ -27,3 +27,4 @@ jobs:
           sudo pip install --upgrade awscli && aws --version
           pip install --upgrade --user awscli
         name: Install awscli for ECR publish
+    - run:  if [ "${CIRCLE_BRANCH}" == "master" ]; then - make release && $HOME/ci-scripts/circleci/github-release $GH_RELEASE_TOKEN release; fi;
