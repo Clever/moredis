@@ -1,53 +1,88 @@
 # This is the default Clever Golang Makefile.
+# It is stored in the dev-handbook repo, github.com/Clever/dev-handbook
 # Please do not alter this file directly.
-GOLANG_MK_VERSION := 0.1.3
+GOLANG_MK_VERSION := 0.4.0
 
 SHELL := /bin/bash
-.PHONY: golang-godep-vendor golang-test-deps $(GODEP)
+SYSTEM := $(shell uname -a | cut -d" " -f1 | tr '[:upper:]' '[:lower:]')
+.PHONY: golang-test-deps bin/dep golang-ensure-curl-installed
+
+# set timezone to UTC for golang to match circle and deploys
+export TZ=UTC
 
 # if the gopath includes several directories, use only the first
 GOPATH=$(shell echo $$GOPATH | cut -d: -f1)
 
 # This block checks and confirms that the proper Go toolchain version is installed.
+# It uses ^ matching in the semver sense -- you can be ahead by a minor
+# version, but not a major version (patch is ignored).
 # arg1: golang version
 define golang-version-check
-GOVERSION := $(shell go version | grep $(1))
-_ := $(if \
-	$(shell go version | grep $(1)), \
-	@echo "", \
-	$(error "must be running Go version $(1)"))
+_ := $(if  \
+		$(shell  \
+			expr >/dev/null  \
+				`go version | cut -d" " -f3 | cut -c3- | cut -d. -f2 | sed -E 's/beta[0-9]+//'`  \
+				\>= `echo $(1) | cut -d. -f2`  \
+				\&  \
+				`go version | cut -d" " -f3 | cut -c3- | cut -d. -f1`  \
+				= `echo $(1) | cut -d. -f1`  \
+			&& echo 1),  \
+		@echo "",  \
+		$(error must be running Go version ^$(1) - you are running $(shell go version | cut -d" " -f3 | cut -c3-)))
 endef
-
-export GO15VENDOREXPERIMENT=1
 
 # FGT is a utility that exits with 1 whenever any stderr/stdout output is recieved.
 FGT := $(GOPATH)/bin/fgt
 $(FGT):
 	go get github.com/GeertJohan/fgt
 
-# Godep is a tool used to manage Golang dependencies in the style of the Go 1.5
-# vendoring experiment.
-GODEP := $(GOPATH)/bin/godep
-$(GODEP):
-	go get -u github.com/tools/godep
+golang-ensure-curl-installed:
+	@command -v curl >/dev/null 2>&1 || { echo >&2 "curl not installed. Please install curl."; exit 1; }
+
+DEP_VERSION = v0.4.1
+DEP_INSTALLED := $(shell [[ -e "bin/dep" ]] && bin/dep version | grep version | grep -v go | cut -d: -f2 | tr -d '[:space:]')
+# Dep is a tool used to manage Golang dependencies. It is the offical vendoring experiment, but
+# not yet the official tool for Golang.
+ifeq ($(DEP_VERSION),$(DEP_INSTALLED))
+bin/dep: # nothing to do, dep is already up-to-date
+else
+CACHED_DEP = /tmp/dep-$(DEP_VERSION)
+bin/dep: golang-ensure-curl-installed
+	@echo "Updating dep..."
+	@mkdir -p bin
+	@if [ ! -f $(CACHED_DEP) ]; then curl -o $(CACHED_DEP) -sL https://github.com/golang/dep/releases/download/$(DEP_VERSION)/dep-$(SYSTEM)-amd64; fi;
+	@cp $(CACHED_DEP) bin/dep
+	@chmod +x bin/dep || true
+endif
+
+# figure out "github.com/<org>/<repo>"
+# `go list` will fail if there are no .go files in the directory
+# if this is the case, fall back to assuming github.com/Clever
+REF = $(shell go list || echo github.com/Clever/$(notdir $(shell pwd)))
+golang-verify-no-self-references:
+	@if grep -q -i "$(REF)" Gopkg.lock; then echo "Error: Gopkg.lock includes a self-reference ($(REF)), which is not allowed. See: https://github.com/golang/dep/issues/1690" && exit 1; fi;
+	@if grep -q -i "$(REF)" Gopkg.toml; then echo "Error: Gopkg.toml includes a self-reference ($(REF)), which is not allowed. See: https://github.com/golang/dep/issues/1690" && exit 1; fi;
+
+golang-dep-vendor-deps: bin/dep golang-verify-no-self-references
+
+# golang-godep-vendor is a target for saving dependencies with the dep tool
+# to the vendor/ directory. All nested vendor/ directories are deleted via
+# the prune command.
+# In CI, -vendor-only is used to avoid updating the lock file.
+ifndef CI
+define golang-dep-vendor
+bin/dep ensure -v
+endef
+else
+define golang-dep-vendor
+bin/dep ensure -v -vendor-only
+endef
+endif
 
 # Golint is a tool for linting Golang code for common errors.
 GOLINT := $(GOPATH)/bin/golint
 $(GOLINT):
-	go get github.com/golang/lint/golint
-
-# golang-vendor-deps installs all dependencies needed for different test cases.
-golang-godep-vendor-deps: $(GODEP)
-
-# golang-godep-vendor is a target for saving dependencies with the godep tool
-# to the vendor/ directory. All nested vendor/ directories are deleted as they
-# are not handled well by the Go toolchain.
-# arg1: pkg path
-define golang-godep-vendor
-$(GODEP) save $(1)
-@# remove any nested vendor directories
-find vendor/ -path '*/vendor' -type d | xargs -IX rm -r X
-endef
+	go get golang.org/x/lint/golint
 
 # golang-fmt-deps requires the FGT tool for checking output
 golang-fmt-deps: $(FGT)
@@ -133,6 +168,19 @@ $(call golang-fmt,$(1))
 $(call golang-lint-strict,$(1))
 $(call golang-vet,$(1))
 $(call golang-test-strict,$(1))
+endef
+
+# golang-build: builds a golang binary. ensures CGO build is done during CI. This is needed to make a binary that works with a Docker alpine image.
+# arg1: pkg path
+# arg2: executable name
+define golang-build
+@echo "BUILDING..."
+@if [ -z "$$CI" ]; then \
+	go build -o bin/$(2) $(1); \
+else \
+	echo "-> Building CGO binary"; \
+	CGO_ENABLED=0 go build -installsuffix cgo -o bin/$(2) $(1); \
+fi;
 endef
 
 # golang-update-makefile downloads latest version of golang.mk
