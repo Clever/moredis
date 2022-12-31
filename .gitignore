@@ -31,3 +31,4 @@ _testmain.go
 moredis
 build
 release
+.git/
