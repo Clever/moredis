@@ -1,5 +1,8 @@
 # moredis
 
+> [!WARNING]
+> _October 2023_: `moredis` is no longer actively maintained
+
 `moredis` is a tool to sync data from MongoDB into redis.
 
 ## Motivation
